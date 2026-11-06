@@ -7,13 +7,13 @@ import { NeuralNetwork } from "./NeuralNetwork";
 import { NeuralConnections } from "./NeuralConnections";
 import { FlowingEnergyStreams } from "./FlowingEnergyStreams";
 import { GeometricStructures } from "./GeometricStructures";
-import { AIOrb } from "./AIOrb";
+import { PersistentLivingOrb } from "./PersistentLivingOrb";
 import type { IntensityMode } from "./NeuralBackground";
 
 function CameraRig() {
   useFrame((state) => {
-    const targetX = state.pointer.x * 1.2;
-    const targetY = state.pointer.y * 0.7;
+    const targetX = state.pointer.x * 1.0;
+    const targetY = state.pointer.y * 0.6;
 
     state.camera.position.x = THREE.MathUtils.lerp(state.camera.position.x, targetX, 0.04);
     state.camera.position.y = THREE.MathUtils.lerp(state.camera.position.y, targetY, 0.04);
@@ -28,8 +28,8 @@ export function ThreeCanvasScene({ mode }: { mode: IntensityMode }) {
   const isIntelligence = mode === "intelligence";
   const isArchitecture = mode === "architecture";
 
-  const particleCount = isOverview ? 260 : isIntelligence || isArchitecture ? 180 : mode === "subtle" ? 110 : 60;
-  const nodeCount = isOverview ? 65 : isIntelligence ? 70 : isArchitecture ? 50 : 28;
+  const particleCount = isOverview ? 240 : isIntelligence || isArchitecture ? 180 : mode === "subtle" ? 110 : 70;
+  const nodeCount = isOverview ? 60 : isIntelligence ? 65 : isArchitecture ? 45 : 25;
 
   return (
     <Canvas
@@ -53,34 +53,30 @@ export function ThreeCanvasScene({ mode }: { mode: IntensityMode }) {
       <CameraRig />
 
       {/* Floating Synaptic Particles in Deep Space */}
-      <FloatingParticles count={particleCount} speed={isOverview ? 0.5 : 0.3} />
+      <FloatingParticles count={particleCount} speed={isOverview ? 0.45 : 0.28} />
 
       {/* Neural Synapse Network Mesh */}
       <NeuralNetwork
         nodeCount={nodeCount}
-        intensity={isOverview ? 1.2 : isIntelligence ? 1.3 : 0.8}
-        maxDistance={isOverview ? 5.8 : 5.0}
+        intensity={isOverview ? 1.1 : isIntelligence ? 1.2 : 0.75}
+        maxDistance={isOverview ? 5.6 : 4.8}
       />
 
       {/* Specialized Neural Connections & Pulsing Nodes */}
       {(isOverview || isIntelligence) && (
-        <NeuralConnections nodeCount={isOverview ? 38 : 45} />
+        <NeuralConnections nodeCount={isOverview ? 36 : 42} />
       )}
 
       {/* Flowing Curved Energy Streams */}
       {(isOverview || isArchitecture) && (
-        <FlowingEnergyStreams streamCount={isOverview ? 7 : 5} speed={0.45} />
+        <FlowingEnergyStreams streamCount={isOverview ? 6 : 4} speed={0.4} />
       )}
 
       {/* Holographic Geometric Rings & Cubes */}
       {(isOverview || isIntelligence) && <GeometricStructures />}
 
-      {/* Hero Central Orb for Overview Scene */}
-      {isOverview && (
-        <group position={[5.5, 0.2, -1]}>
-          <AIOrb scale={1.4} />
-        </group>
-      )}
+      {/* ONE CONTINUOUS PERSISTENT LIVING NEURAL SPHERE */}
+      <PersistentLivingOrb />
     </Canvas>
   );
 }

@@ -49,12 +49,12 @@ export function Header({
   ];
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-line bg-[var(--header-bg)] px-4 backdrop-blur-xl sm:px-6 lg:px-8 transition-colors duration-200">
+    <header className="sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-line bg-[var(--header-bg)] px-4 backdrop-blur-xl sm:px-6 lg:px-8 transition-colors duration-200 animate-header-enter">
       {/* Left: Mobile Toggle & Global Search */}
       <div className="flex items-center gap-3 flex-1 max-w-md">
         <button
           onClick={onOpenMobile}
-          className="lg:hidden flex h-9 w-9 items-center justify-center rounded-xl border border-line bg-panel text-muted hover:text-ink transition-colors"
+          className="lg:hidden flex h-9 w-9 items-center justify-center neumorphic-circle text-muted hover:text-ink cursor-pointer"
           aria-label="Open mobile menu"
         >
           <Menu size={18} />
@@ -74,7 +74,7 @@ export function Header({
         <div className="relative">
           <button
             onClick={() => setThemeDropdownOpen(!themeDropdownOpen)}
-            className="flex items-center gap-1.5 rounded-xl border border-line bg-panel px-3 py-1.5 text-xs font-medium text-ink hover:border-accent transition-colors shadow-sm"
+            className="flex items-center gap-1.5 neumorphic-raised rounded-xl px-3 py-1.5 text-xs font-medium text-ink hover:text-accent cursor-pointer transition-all"
             title="Switch theme"
           >
             {theme === "dark" && <Moon size={14} className="text-accent" />}
@@ -121,7 +121,7 @@ export function Header({
         <div className="relative">
           <button
             onClick={() => setRepoDropdownOpen(!repoDropdownOpen)}
-            className="flex items-center gap-2 rounded-xl border border-line bg-panel px-3 py-1.5 text-xs font-medium text-ink hover:border-accent transition-colors shadow-sm"
+            className="flex items-center gap-2 neumorphic-raised rounded-xl px-3 py-1.5 text-xs font-medium text-ink hover:text-accent cursor-pointer transition-all"
           >
             <GitBranch size={13} className="text-accent" />
             <span className="max-w-[120px] sm:max-w-[160px] truncate">
@@ -163,11 +163,11 @@ export function Header({
         <div className="relative">
           <button
             onClick={() => setNotificationOpen(!notificationOpen)}
-            className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-line bg-panel text-muted hover:border-accent hover:text-ink transition-colors shadow-sm"
+            className="relative flex h-9 w-9 items-center justify-center neumorphic-circle text-muted hover:text-ink cursor-pointer transition-all"
             title="Notifications"
           >
             <Bell size={15} />
-            <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-accent" />
+            <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-accent" />
           </button>
 
           {notificationOpen && (
@@ -194,9 +194,9 @@ export function Header({
         <div className="relative">
           <button
             onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
-            className="flex items-center gap-2 rounded-xl border border-line bg-panel p-1.5 hover:border-accent transition-colors shadow-sm"
+            className="flex items-center gap-2 neumorphic-circle p-1 hover:border-accent cursor-pointer transition-all"
           >
-            <div className="flex h-6 w-6 items-center justify-center rounded-lg bg-gradient-to-tr from-accent to-violet text-white text-[11px] font-bold">
+            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-tr from-accent to-violet text-white text-[11px] font-bold">
               AI
             </div>
           </button>

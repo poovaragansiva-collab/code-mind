@@ -113,16 +113,16 @@ export function FloatingQuickActions() {
           {/* Quick Help Button */}
           <button
             onClick={() => setHelpOpen(true)}
-            className="flex h-11 w-11 items-center justify-center rounded-2xl border border-line bg-panel text-muted hover:text-ink hover:border-accent shadow-lg transition-all"
+            className="flex h-11 w-11 items-center justify-center neumorphic-circle text-muted hover:text-ink cursor-pointer"
             title="Help & documentation"
           >
             <HelpCircle size={18} />
           </button>
 
-          {/* Primary Floating Action Button with Gradient Glow */}
+          {/* Primary Floating Action Button with Neumorphic Gradient Glow */}
           <button
             onClick={() => setMenuOpen(!menuOpen)}
-            className="flex h-12 items-center gap-2 rounded-2xl bg-gradient-to-r from-accent via-[#20D9FF] to-violet px-4 text-white font-semibold text-xs shadow-[0_0_25px_rgba(22,139,255,0.4)] hover:shadow-[0_0_30px_rgba(22,139,255,0.6)] transition-all transform active:scale-95"
+            className="flex h-12 items-center gap-2 rounded-2xl neumorphic-primary px-4 font-semibold text-xs cursor-pointer"
             aria-label="Toggle quick actions"
           >
             <Sparkles size={16} />

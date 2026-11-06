@@ -70,7 +70,7 @@ export function AppSidebar({
       {/* Main Sidebar */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex flex-col border-r border-line bg-[var(--sidebar-bg)] backdrop-blur-2xl transition-all duration-300 ease-in-out",
+          "fixed inset-y-0 left-0 z-50 flex flex-col border-r border-line bg-[var(--sidebar-bg)] backdrop-blur-2xl transition-all duration-300 ease-in-out animate-sidebar-enter",
           collapsed ? "w-[72px]" : "w-[250px]",
           mobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}
@@ -80,9 +80,9 @@ export function AppSidebar({
           <Link
             href="/"
             onClick={onCloseMobile}
-            className="flex items-center gap-3 overflow-hidden"
+            className="flex items-center gap-3 overflow-hidden group"
           >
-            <div className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-accent/40 bg-accent/15 text-accent shadow-sm">
+            <div className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-accent/40 bg-accent/15 text-accent shadow-sm animate-logo-enter">
               <Network size={19} />
               <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-accent animate-pulse" />
             </div>
@@ -101,7 +101,7 @@ export function AppSidebar({
           {/* Desktop Collapse Button */}
           <button
             onClick={onToggleCollapse}
-            className="hidden lg:flex h-7 w-7 items-center justify-center rounded-lg border border-line text-muted hover:border-accent hover:text-ink transition-colors"
+            className="hidden lg:flex h-7 w-7 items-center justify-center neumorphic-circle text-muted hover:text-ink cursor-pointer transition-all"
             title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           >
             {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}

@@ -5,6 +5,7 @@ import { AppSidebar } from "./AppSidebar";
 import { Header } from "./Header";
 import { NeuralBackground } from "@/components/3d/NeuralBackground";
 import { FloatingQuickActions } from "./FloatingQuickActions";
+import { PageTransitionWrapper } from "./PageTransitionWrapper";
 
 export function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
@@ -13,10 +14,10 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-transparent text-ink selection:bg-accent/30 selection:text-white relative">
-      {/* 3D Animated Neural Universe Background Canvas */}
+      {/* 3D Animated Neural Universe Background Canvas (Persistent across all routes) */}
       <NeuralBackground />
 
-      {/* Main Responsive Sidebar */}
+      {/* Main Responsive Sidebar with Staggered 3D Entrance */}
       <AppSidebar
         collapsed={collapsed}
         onToggleCollapse={() => setCollapsed(!collapsed)}
@@ -37,7 +38,9 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
         />
 
         <main className="flex-1 w-full max-w-[1600px] mx-auto px-4 py-6 sm:px-6 sm:py-8 lg:px-9 lg:py-8">
-          {children}
+          <PageTransitionWrapper>
+            {children}
+          </PageTransitionWrapper>
         </main>
 
         {/* Floating Quick Action Button & Help Dock */}
