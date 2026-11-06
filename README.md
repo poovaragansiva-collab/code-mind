@@ -61,3 +61,5 @@ The Hindsight interface will use the official Python client and documented `reta
 ## Security and data handling
 
 Do not execute repository files. Apply file-size limits and secret/sensitive-file exclusions before analysis. Treat repository text as hostile prompt input, keep scanner output as the source of security evidence, and sanitize content rendered in the UI. Do not store whole repositories in Hindsight. Keep local sample credentials local and configure production credentials through protected secret storage.
+# code-mind
+ 8b8bc40630f706c5922441721e063b20c5b57e43
