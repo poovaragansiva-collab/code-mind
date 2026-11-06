@@ -1,31 +1,39 @@
 import * as React from "react";
-import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
-
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/40 disabled:pointer-events-none disabled:opacity-45",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-xs font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98] cursor-pointer shadow-sm",
   {
     variants: {
       variant: {
-        default: "bg-accent text-[#07111d] shadow-sm hover:bg-[#77b8ff]",
-        secondary: "border border-line bg-panel-raised text-ink hover:bg-[#192231]",
-        ghost: "text-muted hover:bg-panel-raised hover:text-ink",
-        outline: "border border-line bg-transparent text-ink hover:bg-panel-raised",
+        default:
+          "bg-gradient-to-r from-accent via-[#38BDF8] to-violet text-white hover:opacity-95 shadow-[0_0_20px_rgba(22,139,255,0.35)] border border-white/20",
+        secondary:
+          "bg-panel-raised text-ink hover:bg-panel border border-line hover:border-accent shadow-sm",
+        outline:
+          "border border-line bg-transparent text-ink hover:bg-panel hover:border-accent",
+        ghost:
+          "text-muted hover:bg-panel-raised hover:text-ink shadow-none",
+        glow:
+          "bg-gradient-to-r from-accent to-violet text-white shadow-[0_0_25px_rgba(145,75,255,0.4)] hover:shadow-[0_0_30px_rgba(145,75,255,0.6)] border border-white/20",
+        danger:
+          "bg-rose-500/15 text-rose-500 dark:text-rose-300 border border-rose-500/30 hover:bg-rose-500/25",
+        success:
+          "bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/25",
       },
       size: {
-        default: "h-10 px-4",
-        sm: "h-8 rounded-md px-3 text-xs",
-        lg: "h-11 rounded-xl px-5",
-        icon: "h-9 w-9",
+        default: "h-9 px-4 py-2",
+        sm: "h-8 px-3 text-[11px]",
+        lg: "h-11 px-5 text-sm",
+        icon: "h-9 w-9 p-0",
       },
     },
     defaultVariants: {
       variant: "default",
       size: "default",
     },
-  },
+  }
 );
 
 export interface ButtonProps
@@ -34,20 +42,17 @@ export interface ButtonProps
   asChild?: boolean;
 }
 
-export function Button({
-  asChild = false,
-  className,
-  size,
-  variant,
-  ...props
-}: ButtonProps) {
-  const Component = asChild ? Slot : "button";
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ className, variant, size, asChild: _asChild = false, ...props }, ref) => {
+    return (
+      <button
+        className={cn(buttonVariants({ variant, size, className }))}
+        ref={ref}
+        {...props}
+      />
+    );
+  }
+);
+Button.displayName = "Button";
 
-  return (
-    <Component
-      data-slot="button"
-      className={cn(buttonVariants({ className, size, variant }))}
-      {...props}
-    />
-  );
-}
+export { Button, buttonVariants };

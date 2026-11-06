@@ -2,16 +2,64 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
+/* Base Variable Definitions & Three-Theme Tokens */
+
+/* 1. DARK THEME (Futuristic Navy Command Center with Deep 3D Transparency) */
+:root,
+[data-theme="dark"] {
   color-scheme: dark;
-  --background: #080b10;
-  --surface: #0e131b;
-  --surface-raised: #131a24;
-  --border: #202a38;
-  --foreground: #edf3fb;
-  --muted: #8c9aae;
-  --accent: #5aa9ff;
-  --violet: #a78bfa;
+  --background: #050817;
+  --surface: rgba(9, 17, 38, 0.45);
+  --surface-raised: rgba(13, 24, 48, 0.55);
+  --border: rgba(27, 41, 75, 0.7);
+  --border-subtle: rgba(22, 139, 255, 0.2);
+  --foreground: #EDF3FB;
+  --muted: #94A3B8;
+  --accent: #168BFF;
+  --accent-cyan: #20D9FF;
+  --violet: #914BFF;
+  --card-glass: rgba(9, 17, 38, 0.4);
+  --header-bg: rgba(5, 8, 23, 0.65);
+  --sidebar-bg: rgba(9, 17, 38, 0.75);
+  --glow-shadow: 0 0 35px -5px rgba(22, 139, 255, 0.4);
+}
+
+/* 2. LIGHT THEME (Translucent Crisp Enterprise Dashboard) */
+[data-theme="light"] {
+  color-scheme: light;
+  --background: #F5F8FF;
+  --surface: rgba(255, 255, 255, 0.75);
+  --surface-raised: rgba(235, 241, 253, 0.85);
+  --border: rgba(214, 226, 245, 0.85);
+  --border-subtle: rgba(40, 120, 240, 0.2);
+  --foreground: #172033;
+  --muted: #64748B;
+  --accent: #2878F0;
+  --accent-cyan: #0FB5D6;
+  --violet: #7955DB;
+  --card-glass: rgba(255, 255, 255, 0.65);
+  --header-bg: rgba(245, 248, 255, 0.75);
+  --sidebar-bg: rgba(255, 255, 255, 0.82);
+  --glow-shadow: 0 8px 30px -4px rgba(40, 120, 240, 0.2);
+}
+
+/* 3. COLORFUL THEME (Vibrant Cyberpunk with High Contrast) */
+[data-theme="colorful"] {
+  color-scheme: dark;
+  --background: #0B0720;
+  --surface: rgba(20, 14, 51, 0.45);
+  --surface-raised: rgba(31, 21, 74, 0.55);
+  --border: rgba(56, 36, 112, 0.75);
+  --border-subtle: rgba(236, 72, 153, 0.35);
+  --foreground: #F8FAFC;
+  --muted: #C7D2FE;
+  --accent: #20D9FF;
+  --accent-cyan: #38BDF8;
+  --violet: #C084FC;
+  --card-glass: rgba(20, 14, 51, 0.4);
+  --header-bg: rgba(11, 7, 32, 0.65);
+  --sidebar-bg: rgba(20, 14, 51, 0.75);
+  --glow-shadow: 0 0 40px -5px rgba(192, 132, 252, 0.5);
 }
 
 * {
@@ -20,19 +68,19 @@
 
 html {
   min-height: 100%;
-  background: var(--background);
+  background-color: var(--background);
+  transition: background-color 0.3s ease, color 0.3s ease;
   scroll-behavior: smooth;
 }
 
 body {
   min-height: 100vh;
   margin: 0;
-  background:
-    radial-gradient(ellipse at 72% -18%, rgba(45, 77, 125, 0.15), transparent 42%),
-    var(--background);
+  background-color: transparent;
   color: var(--foreground);
   font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   text-rendering: optimizeLegibility;
+  overflow-x: hidden;
 }
 
 button,
@@ -41,8 +89,8 @@ a {
 }
 
 ::selection {
-  background: rgba(90, 169, 255, 0.28);
-  color: #fff;
+  background: rgba(22, 139, 255, 0.35);
+  color: #FFFFFF;
 }
 
 .font-mono {
@@ -56,4 +104,23 @@ a {
 
 .no-scrollbar {
   scrollbar-width: none;
+}
+
+/* Glassmorphism & Theme Utilities */
+.glass-panel {
+  background: var(--card-glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-subtle);
+}
+
+.glass-panel-raised {
+  background: var(--surface-raised);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid var(--border);
+}
+
+.glow-ambient {
+  box-shadow: var(--glow-shadow);
 }
