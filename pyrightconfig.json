@@ -1,0 +1,18 @@
+{
+  "include": [
+    "backend/app",
+    "backend/tests",
+    "backend/alembic"
+  ],
+  "exclude": [
+    "backend/.venv",
+    "**/__pycache__"
+  ],
+  "pythonVersion": "3.12",
+  "pythonPlatform": "Linux",
+  "venvPath": "backend",
+  "venv": ".venv",
+  "extraPaths": [
+    "backend"
+  ]
+}

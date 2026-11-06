@@ -1,0 +1,10 @@
+packages:
+  - frontend
+
+# No dependency install lifecycle scripts are required by the current workspace.
+allowBuilds: {}
+
+# Entries added by pnpm 11.25.0 for packages accepted by the initial dependency install.
+minimumReleaseAgeExclude:
+  - geist@1.9.2
+  - lucide-react@1.70.0

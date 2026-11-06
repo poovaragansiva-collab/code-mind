@@ -1,0 +1,24 @@
+# Secrets and local environment
+.env
+.env.*
+!.env.example
+
+# Node.js and Next.js
+node_modules/
+frontend/.next/
+frontend/next-env.d.ts
+frontend/out/
+frontend/tsconfig.tsbuildinfo
+
+# Python
+backend/.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+
+# Editors and operating systems
+.DS_Store
+.vscode/
+.idea/
+*.swp

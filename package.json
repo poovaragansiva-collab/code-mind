@@ -1,0 +1,12 @@
+{
+  "name": "codemind",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@11.25.0",
+  "scripts": {
+    "dev:frontend": "pnpm --filter @codemind/frontend dev",
+    "build": "pnpm --filter @codemind/frontend build",
+    "typecheck": "pnpm --filter @codemind/frontend typecheck",
+    "lint": "pnpm --filter @codemind/frontend lint"
+  }
+}
