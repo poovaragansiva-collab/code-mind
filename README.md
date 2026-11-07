@@ -1,65 +1,355 @@
 # CodeMind
 
-CodeMind is an incremental engineering-intelligence platform for repository analysis. It is designed to combine evidence from static/security tools and architecture graphs with team-specific engineering memory. Analysis findings are commit-bound; untrusted repository code is never executed.
+### AI-Powered Engineering Intelligence for Modern Software Repositories
 
-## Current milestone
+**Understand your codebase. Identify risks. Predict what comes next.**
 
-Milestone 1 establishes the dashboard shell, API health endpoint, PostgreSQL connection status, and local service configuration. The dashboard intentionally displays empty states rather than invented repositories, analysis metrics, or findings. GitHub, Groq, Hindsight, and a real PostgreSQL server must be configured and successfully exercised before those integrations can be described as live.
+CodeMind is an AI-powered engineering intelligence platform designed to help developers understand, analyze, and improve complete software repositories.
 
-## Requirements
+It brings together code quality analysis, security insights, architectural intelligence, AI-powered agents, predictive insights, and engineering memory to provide a deeper understanding of software systems.
 
-- Node.js 22 and pnpm 11.25.0 for the frontend.
-- Python 3.12 and `uv` for the backend.
-- PostgreSQL for the requested database. The managed Webdev database is MySQL-compatible and is not used as a substitute.
-- Docker Compose is optional for local PostgreSQL and Redis. Managed Redis is not enabled by this project configuration.
+Instead of relying on multiple disconnected tools and manually inspecting thousands of lines of code, CodeMind aims to give developers a unified view of their codebase and its engineering health.
 
-## Local setup
+---
 
-1. Copy `.env.example` to `.env`. The sample PostgreSQL password is development-only; do not use it outside a local environment.
-2. Install the pinned JavaScript dependencies with `pnpm install`.
-3. Install the backend and development tools with `uv sync --project backend --group dev`.
-4. If Docker Compose is available, start local infrastructure with `docker compose up -d postgres redis`. Wait for both health checks to pass. Set `DATABASE_URL` to the PostgreSQL service shown in `.env.example`.
-5. In one terminal, start FastAPI from the repository root:
+## The Problem
 
-   ```bash
-   uv run --project backend uvicorn app.main:app --app-dir backend --host 0.0.0.0 --port 8000 --reload
-   ```
+As software projects grow, understanding and maintaining them becomes increasingly difficult.
 
-6. In another terminal, start Next.js:
+Developers and engineering teams face challenges such as:
 
-   ```bash
-   pnpm dev:frontend
-   ```
+- Understanding unfamiliar or large codebases.
+- Identifying potential security vulnerabilities.
+- Detecting code quality issues and technical debt.
+- Understanding architectural dependencies and structural problems.
+- Predicting areas of future maintenance risk.
+- Retaining engineering knowledge across development cycles.
 
-The frontend listens on port 3000 and proxies `/api/*` to `CODEMIND_API_INTERNAL_URL` (default `http://127.0.0.1:8000`). FastAPI exposes `GET /api/health`. The health response reports only component status labels, never connection strings, API keys, or private keys. Without a database URL the endpoint reports `degraded` and `database: not_configured`; with a configured but unreachable database it reports `database: unavailable`. A `healthy` status means core API/PostgreSQL health only, not full product readiness. Provider labels report configuration presence and do not prove remote reachability.
+Traditional development tools often provide isolated insights, leaving developers to connect the dots themselves.
 
-## Checks
+## Our Solution
 
-Run frontend checks from the repository root:
+CodeMind aims to bring these insights together through an intelligent repository analysis platform.
 
-```bash
-pnpm typecheck
-pnpm lint
-pnpm build
+It combines automated analysis with specialized AI agents to help developers move beyond simply identifying issues toward understanding their impact and deciding what to improve next.
+
+## Core Capabilities
+
+### 1. Repository Intelligence
+- Analyze complete GitHub repositories.
+- Understand project structure and source code.
+- Build contextual understanding of repository components.
+- Identify relationships between different parts of a codebase.
+
+### 2. Code Quality Analysis
+- Identify potential code quality issues.
+- Highlight maintainability concerns.
+- Detect patterns that may contribute to technical debt.
+- Provide actionable improvement suggestions.
+
+### 3. Security Intelligence
+- Identify potential security vulnerabilities.
+- Highlight suspicious code patterns.
+- Explain security findings in understandable language.
+- Help developers prioritize potential risks.
+
+### 4. Architectural Intelligence
+- Understand repository architecture and organization.
+- Identify structural and dependency-related concerns.
+- Evaluate architectural quality.
+- Highlight potential design and maintainability problems.
+
+### 5. Predictive Engineering Insights
+- Identify potential future engineering risks.
+- Highlight areas that may require maintenance.
+- Provide AI-assisted recommendations for improving long-term codebase health.
+
+### 6. AI Agent Orchestration
+CodeMind uses specialized AI agents to support different aspects of repository analysis.
+
+The objective is to combine multiple perspectives into a unified engineering assessment rather than relying on a single general-purpose AI response.
+
+### 7. Engineering Memory
+CodeMind explores the use of persistent engineering context to retain useful knowledge about software projects.
+
+With Hindsight integration, the goal is to provide historical context that can help improve future analysis and recommendations.
+
+---
+
+## How CodeMind Works
+
+The intended analysis workflow:
+
+1. **Repository Input:** The developer provides a GitHub repository.
+2. **Repository Understanding:** CodeMind examines the repository structure and relevant source code.
+3. **Specialized Analysis:** Different analysis agents evaluate code quality, security, and architecture.
+4. **Intelligence Generation:** The platform combines findings into engineering insights.
+5. **Risk Identification:** Potential issues and future maintenance risks are highlighted.
+6. **Recommendations:** Developers receive explanations and suggested improvements.
+7. **Engineering Memory:** Relevant project knowledge can be retained for future analysis as the memory integration is developed.
+
+---
+
+## System Architecture
+
+```mermaid
+flowchart TD
+    A[Developer] --> B[CodeMind Frontend]
+    B --> C[FastAPI Backend]
+    C --> D[Repository Integration]
+    D --> E[Repository Analysis]
+    E --> F[AI Agent Orchestrator]
+    F --> G[Code Quality Agent]
+    F --> H[Security Agent]
+    F --> I[Architecture Agent]
+    F --> J[Prediction Agent]
+    G --> K[Engineering Insights]
+    H --> K
+    I --> K
+    J --> K
+    K --> L[Dashboard and Reports]
+    F --> M[Hindsight Engineering Memory]
+    C --> N[(Neon PostgreSQL)]
 ```
 
-Run backend tests from `backend/`:
+*Architecture represents the intended system design. Individual integrations and persistence capabilities are subject to implementation and deployment verification.*
 
-```bash
-uv run --group dev pytest
-uv run --group dev ruff check app tests
+---
+
+## Technology Stack
+
+| Layer | Technology |
+|---|---|
+| Frontend | React / TypeScript |
+| Backend | Python / FastAPI |
+| AI Integration | Groq |
+| Engineering Memory | Hindsight |
+| Database | Neon PostgreSQL |
+| Repository Platform | GitHub |
+| Frontend Deployment | Vercel |
+| Backend Deployment | Render |
+| Testing | Pytest |
+| Code Quality | Ruff |
+
+---
+
+## Project Structure
+
+```text
+CodeMind/
+│
+├── backend/
+│   ├── app/
+│   │   ├── core/
+│   │   ├── agents/
+│   │   ├── api/
+│   │   ├── services/
+│   │   └── main.py
+│   │
+│   ├── tests/
+│   └── pyproject.toml
+│
+├── frontend/
+│   ├── src/
+│   ├── public/
+│   └── package.json
+│
+├── README.md
+└── ...
 ```
 
-The health tests cover missing-configuration behavior, status-only provider reporting, and PostgreSQL DSN normalization. A test double or configuration check does not establish that a live integration works.
+*The directory overview is illustrative; refer to the repository for the current implementation.*
 
-## External integrations
+---
 
-GitHub App, Groq, and Hindsight values belong in protected runtime configuration or an untracked local `.env`; never commit them. The current workspace has no GitHub App ID/private key, `GROQ_API_KEY`, Hindsight service credentials, or external PostgreSQL DSN. The available OpenAI-compatible credential is not a substitute for the requested Groq provider. Configure each provider before attempting its live integration and verify it with a real request.
+## Getting Started
 
-The Hindsight interface will use the official Python client and documented `retain`, `recall`, and `reflect` operations. GitHub ingestion will use installation tokens and the Git Trees API, accounting for recursive tree truncation and token expiry. The actual integrations remain future milestones.
+### Prerequisites
 
-## Security and data handling
+- Python 3.12+
+- Node.js
+- pnpm
+- Git
+- GitHub account
 
-Do not execute repository files. Apply file-size limits and secret/sensitive-file exclusions before analysis. Treat repository text as hostile prompt input, keep scanner output as the source of security evidence, and sanitize content rendered in the UI. Do not store whole repositories in Hindsight. Keep local sample credentials local and configure production credentials through protected secret storage.
-# code-mind
- 8b8bc40630f706c5922441721e063b20c5b57e43
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/poovaragansiva-collab/code-mind.git
+
+cd code-mind
+```
+
+### 2. Backend Setup
+
+```bash
+cd backend
+
+uv sync
+```
+
+Create a `.env` file using the environment variable names documented in the backend configuration.
+
+Do not commit API keys, database credentials, private keys, or other secrets.
+
+Start the backend:
+
+```bash
+uv run uvicorn app.main:app --reload
+```
+
+Backend API:
+
+```text
+http://localhost:8000
+```
+
+### 3. Frontend Setup
+
+Open another terminal:
+
+```bash
+cd frontend
+
+corepack pnpm install
+
+corepack pnpm dev
+```
+
+Open the local frontend URL displayed in your terminal.
+
+### 4. Run Backend Tests
+
+```bash
+cd backend
+
+uv run pytest
+```
+
+### 5. Run Ruff
+
+```bash
+cd backend
+
+uv run ruff check .
+```
+
+---
+
+## Deployment
+
+CodeMind uses the following deployment infrastructure:
+
+| Component | Platform |
+|---|---|
+| Frontend | Vercel |
+| Backend | Render |
+| Database | Neon PostgreSQL |
+
+**Live Project:** https://codemind-saiyans2.vercel.app
+
+**Backend:** https://codemind-api-live.onrender.com
+
+---
+
+## Current Development Status
+
+CodeMind is being developed as a hackathon MVP.
+
+Our current focus is building and validating the core repository analysis workflow.
+
+| Component | Development status |
+|---|---|
+| Frontend application | Implemented |
+| FastAPI backend | Implemented |
+| AI agent orchestration | Implemented / under validation |
+| Code quality analysis | Under development |
+| Security analysis | Under development |
+| Architecture intelligence | Under development |
+| Predictive insights | Under development |
+| GitHub integration | Configuration and validation in progress |
+| Hindsight integration | Configuration and validation in progress |
+| Neon database persistence | Integration and validation in progress |
+
+*Status reflects development progress, not a guarantee that every feature is production-ready.*
+
+---
+
+## Roadmap
+
+### Phase 1 — MVP
+- [x] Initial frontend and backend setup
+- [x] FastAPI application
+- [x] Initial AI agent architecture
+- [ ] Complete repository ingestion workflow
+- [ ] Validate specialized analysis agents
+- [ ] Integrate repository analysis with the dashboard
+
+### Phase 2 — Engineering Intelligence
+- [ ] Improve code quality assessment
+- [ ] Expand security analysis
+- [ ] Develop architectural quality scoring
+- [ ] Introduce predictive engineering insights
+- [ ] Improve recommendation accuracy
+
+### Phase 3 — Persistent Engineering Memory
+- [ ] Validate Hindsight integration
+- [ ] Retain repository-specific engineering context
+- [ ] Track historical analysis insights
+- [ ] Improve recommendations using previous findings
+
+### Phase 4 — Product Expansion
+- [ ] Team-level engineering intelligence
+- [ ] Repository health monitoring
+- [ ] Historical risk tracking
+- [ ] Continuous analysis workflows
+- [ ] Production-grade scalability
+
+---
+
+## Why CodeMind?
+
+We believe developers should spend less time trying to understand what is happening inside a codebase and more time improving it.
+
+CodeMind aims to transform repository analysis from disconnected technical checks into a unified engineering intelligence experience.
+
+The long-term vision is to build a platform that doesn't just tell developers what is wrong, but helps them understand why it matters and what might happen next.
+
+---
+
+## Team
+
+Built by a team of six student developers as part of a Microsoft hackathon.
+
+We are exploring the intersection of AI, software engineering, repository intelligence, and developer productivity.
+
+---
+
+## Contributing
+
+We welcome feedback, ideas, and contributions.
+
+If you have suggestions, discover issues, or want to contribute:
+
+1. Fork the repository.
+2. Create a feature branch.
+3. Make your changes.
+4. Run the available tests.
+5. Submit a pull request.
+
+---
+
+## Links
+
+- **Live Application:** https://codemind-saiyans2.vercel.app
+- **GitHub Repository:** https://github.com/poovaragansiva-collab/code-mind
+
+---
+
+<p align="center">
+  <strong>CodeMind — Understand. Analyze. Predict. Improve.</strong>
+</p>
+
+<p align="center">
+  Built with curiosity and a vision for smarter software engineering.
+</p>
