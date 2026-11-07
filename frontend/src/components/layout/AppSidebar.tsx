@@ -128,13 +128,16 @@ export function AppSidebar({
                     onClick={onCloseMobile}
                     title={collapsed ? item.label : undefined}
                     className={cn(
-                      "group flex items-center gap-3 rounded-xl px-3 py-2 text-[13px] font-medium transition-all duration-200",
+                      "group relative flex items-center gap-3 rounded-xl px-3 py-2 text-[13px] font-medium transition-all duration-200 select-none",
                       isActive
-                        ? "bg-accent/15 text-accent font-semibold shadow-sm border border-accent/30"
-                        : "text-muted hover:bg-panel-raised hover:text-ink border border-transparent"
+                        ? "bg-accent/15 text-accent font-semibold shadow-sm border border-accent/40 shadow-[0_0_15px_rgba(22,139,255,0.2)]"
+                        : "text-muted hover:bg-panel-raised hover:text-ink hover:border-line border border-transparent active:scale-[0.98]"
                     )}
                   >
-                    <Icon size={17} className={cn("shrink-0", isActive ? "text-accent" : "text-muted group-hover:text-ink")} />
+                    {isActive && (
+                      <span className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-1 rounded-r-full bg-accent shadow-[0_0_8px_rgba(22,139,255,0.8)]" />
+                    )}
+                    <Icon size={17} className={cn("shrink-0 transition-transform duration-200 group-hover:scale-110", isActive ? "text-accent" : "text-muted group-hover:text-ink")} />
                     {!collapsed && (
                       <span className="truncate flex-1">{item.label}</span>
                     )}
@@ -167,13 +170,16 @@ export function AppSidebar({
                     onClick={onCloseMobile}
                     title={collapsed ? item.label : undefined}
                     className={cn(
-                      "group flex items-center gap-3 rounded-xl px-3 py-2 text-[13px] font-medium transition-all duration-200",
+                      "group relative flex items-center gap-3 rounded-xl px-3 py-2 text-[13px] font-medium transition-all duration-200 select-none",
                       isActive
-                        ? "bg-accent/15 text-accent font-semibold shadow-sm border border-accent/30"
-                        : "text-muted hover:bg-panel-raised hover:text-ink border border-transparent"
+                        ? "bg-accent/15 text-accent font-semibold shadow-sm border border-accent/40 shadow-[0_0_15px_rgba(22,139,255,0.2)]"
+                        : "text-muted hover:bg-panel-raised hover:text-ink hover:border-line border border-transparent active:scale-[0.98]"
                     )}
                   >
-                    <Icon size={17} className={cn("shrink-0", isActive ? "text-accent" : "text-muted group-hover:text-ink")} />
+                    {isActive && (
+                      <span className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-1 rounded-r-full bg-accent shadow-[0_0_8px_rgba(22,139,255,0.8)]" />
+                    )}
+                    <Icon size={17} className={cn("shrink-0 transition-transform duration-200 group-hover:scale-110", isActive ? "text-accent" : "text-muted group-hover:text-ink")} />
                     {!collapsed && <span className="truncate flex-1">{item.label}</span>}
                   </Link>
                 );
@@ -199,13 +205,16 @@ export function AppSidebar({
                     onClick={onCloseMobile}
                     title={collapsed ? item.label : undefined}
                     className={cn(
-                      "group flex items-center gap-3 rounded-xl px-3 py-2 text-[13px] font-medium transition-all duration-200",
+                      "group relative flex items-center gap-3 rounded-xl px-3 py-2 text-[13px] font-medium transition-all duration-200 select-none",
                       isActive
-                        ? "bg-accent/15 text-accent font-semibold shadow-sm border border-accent/30"
-                        : "text-muted hover:bg-panel-raised hover:text-ink border border-transparent"
+                        ? "bg-accent/15 text-accent font-semibold shadow-sm border border-accent/40 shadow-[0_0_15px_rgba(22,139,255,0.2)]"
+                        : "text-muted hover:bg-panel-raised hover:text-ink hover:border-line border border-transparent active:scale-[0.98]"
                     )}
                   >
-                    <Icon size={17} className={cn("shrink-0", isActive ? "text-accent" : "text-muted group-hover:text-ink")} />
+                    {isActive && (
+                      <span className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-1 rounded-r-full bg-accent shadow-[0_0_8px_rgba(22,139,255,0.8)]" />
+                    )}
+                    <Icon size={17} className={cn("shrink-0 transition-transform duration-200 group-hover:scale-110", isActive ? "text-accent" : "text-muted group-hover:text-ink")} />
                     {!collapsed && <span className="truncate flex-1">{item.label}</span>}
                   </Link>
                 );

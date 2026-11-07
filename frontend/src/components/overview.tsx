@@ -26,7 +26,7 @@ import { QuickActionCard } from "@/components/dashboard/QuickActionCard";
 import { ScrollDownButton } from "@/components/ui/ScrollDownButton";
 import { useAIJourney } from "@/lib/ai-journey-context";
 
-// Dynamically import dedicated hero 3D visual component with scroll capability
+// Dedicated hero 3D visual component matching the architectural focus
 const HeroOrbVisual = dynamic(
   () => import("@/components/3d/HeroOrbVisual").then((mod) => mod.HeroOrbVisual),
   { ssr: false }
@@ -154,53 +154,73 @@ export function Overview() {
 
   return (
     <div className="space-y-12">
-      {/* SECTION 1: AI Universe Hero with 3D Neural Sphere & Entry Sequence */}
-      <section className="relative overflow-hidden rounded-3xl border border-line bg-[var(--card-glass)] p-6 sm:p-8 lg:p-10 shadow-panel backdrop-blur-2xl">
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(340px,1fr)] items-center">
-          <div className="relative z-10 max-w-2xl">
+      {/* SECTION 1: REDESIGNED HERO SECTION (REFERENCE COMPOSITION) */}
+      <section className="relative overflow-hidden rounded-3xl border border-line bg-[var(--card-glass)] p-6 sm:p-10 lg:p-12 shadow-2xl backdrop-blur-3xl">
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,1.25fr)_minmax(340px,1fr)] items-center">
+          {/* LEFT SIDE: Typography and CTA Controls */}
+          <div className="relative z-10 max-w-2xl space-y-6">
             <div className="flex flex-wrap items-center gap-2.5">
-              <Badge variant="blue">
-                <span className="h-1.5 w-1.5 rounded-full bg-accent animate-ping" />
-                AI Code Review Agent
+              <Badge variant="blue" className="px-3 py-1 font-mono tracking-widest text-[11px] uppercase">
+                <span className="h-1.5 w-1.5 rounded-full bg-accent animate-ping mr-1.5" />
+                AI POWERED CODE INTELLIGENCE
               </Badge>
-              <span className="font-mono text-[11px] uppercase tracking-wider text-muted">
-                Deterministic Evidence + Neural Intelligence
-              </span>
             </div>
 
-            <h1 className="mt-5 text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-ink">
-              Welcome to <span className="bg-gradient-to-r from-accent via-accent-cyan to-violet bg-clip-text text-transparent">CodeMind</span>
-            </h1>
+            <div>
+              <h1 className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white">
+                CODEMIND
+              </h1>
+              <h2 className="mt-2 text-2xl sm:text-3xl font-semibold tracking-tight text-accent-cyan">
+                AI Code Review Agent
+              </h2>
+            </div>
 
-            <p className="mt-4 text-sm sm:text-base leading-relaxed text-muted">
-              Your intelligent code review workspace. Understand your codebase, learn team standards, and improve software quality with AI.
+            <p className="text-base sm:text-lg font-medium text-slate-200">
+              Smarter Code. Better Quality. Faster Development.
             </p>
 
-            <div className="mt-8 flex flex-wrap gap-3.5">
-              <Button asChild size="lg" variant="default" onClick={() => journey.triggerNavAction("/reviews")}>
+            <p className="text-sm sm:text-base leading-relaxed text-slate-400 max-w-xl">
+              An intelligent platform that helps developers analyze code, identify potential issues, understand software quality, and improve their development workflow.
+            </p>
+
+            <div className="pt-2 flex flex-wrap gap-4">
+              <Button
+                asChild
+                size="lg"
+                variant="default"
+                className="button-shimmer shadow-[0_0_30px_rgba(22,139,255,0.5)] hover:shadow-[0_0_40px_rgba(22,139,255,0.7)] text-sm font-semibold px-6 py-3"
+                onClick={() => journey.triggerNavAction("/reviews")}
+              >
                 <Link href="/reviews">
-                  <FileCode2 size={16} />
-                  Start Code Review
-                  <ArrowRight size={15} />
+                  <FileCode2 size={18} className="transition-transform group-hover:scale-110" />
+                  <span>Start Code Review</span>
+                  <ArrowRight size={16} className="icon-arrow-slide" />
                 </Link>
               </Button>
-              <Button asChild size="lg" variant="secondary" onClick={() => journey.triggerNavAction("/repositories")}>
+
+              <Button
+                asChild
+                size="lg"
+                variant="secondary"
+                className="glass-panel hover:border-accent hover:shadow-[0_0_20px_rgba(22,139,255,0.25)] text-sm font-semibold px-6 py-3"
+                onClick={() => journey.triggerNavAction("/repositories")}
+              >
                 <Link href="/repositories">
-                  <GitBranch size={16} />
-                  Explore Repositories
+                  <GitBranch size={18} className="transition-transform group-hover:rotate-12" />
+                  <span>Explore Repositories</span>
                 </Link>
               </Button>
             </div>
           </div>
 
-          {/* Prominent 3D Neural Orb Section with Cinematic Power-On Entrance */}
+          {/* RIGHT SIDE: 3D AI Architectural Viewport Framing */}
           <div className="w-full flex items-center justify-center animate-card-stagger-2">
             <HeroOrbVisual />
           </div>
         </div>
 
-        {/* Down Arrow Button at the bottom of Section 1 */}
-        <div className="mt-6 flex justify-center border-t border-line/40 pt-5">
+        {/* Down Arrow Button at the bottom of Hero */}
+        <div className="mt-8 flex justify-center border-t border-line/40 pt-6">
           <ScrollDownButton targetId="section-analysis" />
         </div>
       </section>
