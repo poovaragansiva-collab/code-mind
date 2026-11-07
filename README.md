@@ -341,7 +341,7 @@ If you have suggestions, discover issues, or want to contribute:
 
 ## Links
 
-- **Live Application:** https://codemind-saiyans2.vercel.app
+- **Live Application:** [https://codemind-saiyans2.vercel.app](https://codemind-zeta.vercel.app/)
 - **GitHub Repository:** https://github.com/poovaragansiva-collab/code-mind
 
 ---
