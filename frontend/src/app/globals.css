@@ -398,8 +398,33 @@ a {
     inset -2px -2px 5px rgba(255, 255, 255, 0.05) !important;
 }
 
-[data-theme="light"] .neumorphic-circle:active {
-  box-shadow: 
-    inset 3px 3px 6px rgba(160, 175, 205, 0.4),
-    inset -2px -2px 5px rgba(255, 255, 255, 0.9) !important;
+/* 4. Enhanced 3D Glassmorphic Interactive Effects & Light Sweep */
+@keyframes buttonShimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.button-shimmer {
+  background-size: 200% 100%;
+  animation: buttonShimmer 4s infinite linear;
+}
+
+/* Subtle icon hover animations */
+.group:hover .icon-arrow-slide {
+  transform: translateX(3px);
+  transition: transform 0.2s ease;
+}
+
+.group:hover .icon-rotate-subtle {
+  transform: rotate(15deg);
+  transition: transform 0.2s ease;
+}
+
+.group:hover .icon-scale-pop {
+  transform: scale(1.1);
+  transition: transform 0.2s ease;
 }
