@@ -2,64 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Base Variable Definitions & Three-Theme Tokens */
-
-/* 1. DARK THEME (Futuristic Navy Command Center with Deep 3D Transparency) */
-:root,
-[data-theme="dark"] {
+:root {
   color-scheme: dark;
-  --background: #050817;
-  --surface: rgba(9, 17, 38, 0.45);
-  --surface-raised: rgba(13, 24, 48, 0.55);
-  --border: rgba(27, 41, 75, 0.7);
-  --border-subtle: rgba(22, 139, 255, 0.2);
-  --foreground: #EDF3FB;
-  --muted: #94A3B8;
-  --accent: #168BFF;
-  --accent-cyan: #20D9FF;
-  --violet: #914BFF;
-  --card-glass: rgba(9, 17, 38, 0.4);
-  --header-bg: rgba(5, 8, 23, 0.65);
-  --sidebar-bg: rgba(9, 17, 38, 0.75);
-  --glow-shadow: 0 0 35px -5px rgba(22, 139, 255, 0.4);
-}
-
-/* 2. LIGHT THEME (Translucent Crisp Enterprise Dashboard) */
-[data-theme="light"] {
-  color-scheme: light;
-  --background: #F5F8FF;
-  --surface: rgba(255, 255, 255, 0.75);
-  --surface-raised: rgba(235, 241, 253, 0.85);
-  --border: rgba(214, 226, 245, 0.85);
-  --border-subtle: rgba(40, 120, 240, 0.2);
-  --foreground: #172033;
-  --muted: #64748B;
-  --accent: #2878F0;
-  --accent-cyan: #0FB5D6;
-  --violet: #7955DB;
-  --card-glass: rgba(255, 255, 255, 0.65);
-  --header-bg: rgba(245, 248, 255, 0.75);
-  --sidebar-bg: rgba(255, 255, 255, 0.82);
-  --glow-shadow: 0 8px 30px -4px rgba(40, 120, 240, 0.2);
-}
-
-/* 3. COLORFUL THEME (Vibrant Cyberpunk with High Contrast) */
-[data-theme="colorful"] {
-  color-scheme: dark;
-  --background: #0B0720;
-  --surface: rgba(20, 14, 51, 0.45);
-  --surface-raised: rgba(31, 21, 74, 0.55);
-  --border: rgba(56, 36, 112, 0.75);
-  --border-subtle: rgba(236, 72, 153, 0.35);
-  --foreground: #F8FAFC;
-  --muted: #C7D2FE;
-  --accent: #20D9FF;
-  --accent-cyan: #38BDF8;
-  --violet: #C084FC;
-  --card-glass: rgba(20, 14, 51, 0.4);
-  --header-bg: rgba(11, 7, 32, 0.65);
-  --sidebar-bg: rgba(20, 14, 51, 0.75);
-  --glow-shadow: 0 0 40px -5px rgba(192, 132, 252, 0.5);
+  --background: #080b10;
+  --surface: #0e131b;
+  --surface-raised: #131a24;
+  --border: #202a38;
+  --foreground: #edf3fb;
+  --muted: #8c9aae;
+  --accent: #5aa9ff;
+  --violet: #a78bfa;
 }
 
 * {
@@ -68,19 +20,19 @@
 
 html {
   min-height: 100%;
-  background-color: var(--background);
-  transition: background-color 0.3s ease, color 0.3s ease;
+  background: var(--background);
   scroll-behavior: smooth;
 }
 
 body {
   min-height: 100vh;
   margin: 0;
-  background-color: transparent;
+  background:
+    radial-gradient(ellipse at 72% -18%, rgba(45, 77, 125, 0.15), transparent 42%),
+    var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   text-rendering: optimizeLegibility;
-  overflow-x: hidden;
 }
 
 button,
@@ -89,8 +41,8 @@ a {
 }
 
 ::selection {
-  background: rgba(22, 139, 255, 0.35);
-  color: #FFFFFF;
+  background: rgba(90, 169, 255, 0.28);
+  color: #fff;
 }
 
 .font-mono {
@@ -98,308 +50,10 @@ a {
   font-variant-ligatures: none;
 }
 
-/* =========================================================================
-   3D PAGE ENTRY ANIMATIONS & PERSPECTIVE STAGGER SYSTEM
-   ========================================================================= */
-
-@keyframes perspectivePageEnter {
-  0% {
-    opacity: 0;
-    transform: perspective(1200px) rotateX(4deg) translateY(24px) scale(0.985);
-    filter: blur(6px);
-  }
-  100% {
-    opacity: 1;
-    transform: perspective(1200px) rotateX(0deg) translateY(0) scale(1);
-    filter: blur(0px);
-  }
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 
-@keyframes logoPowerOn {
-  0% {
-    opacity: 0;
-    transform: scale(0.6) rotate(-15deg);
-    filter: drop-shadow(0 0 0px var(--accent));
-  }
-  60% {
-    transform: scale(1.1) rotate(4deg);
-    filter: drop-shadow(0 0 25px var(--accent));
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) rotate(0deg);
-    filter: drop-shadow(0 0 12px var(--accent));
-  }
-}
-
-@keyframes slideDownHeader {
-  0% {
-    opacity: 0;
-    transform: translateY(-20px) perspective(800px) rotateX(-8deg);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) perspective(800px) rotateX(0deg);
-  }
-}
-
-@keyframes slideInSidebar {
-  0% {
-    opacity: 0;
-    transform: translateX(-24px) perspective(1000px) rotateY(6deg);
-  }
-  100% {
-    opacity: 1;
-    transform: translateX(0) perspective(1000px) rotateY(0deg);
-  }
-}
-
-@keyframes staggerCardEntrance {
-  0% {
-    opacity: 0;
-    transform: perspective(1000px) translateY(28px) rotateX(6deg) scale(0.97);
-  }
-  100% {
-    opacity: 1;
-    transform: perspective(1000px) translateY(0) rotateX(0deg) scale(1);
-  }
-}
-
-@keyframes floatingOrbActivation {
-  0% {
-    opacity: 0;
-    transform: scale(0.7) rotate(-10deg);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) rotate(0deg);
-  }
-}
-
-/* Page entrance utilities */
-.animate-page-enter {
-  animation: perspectivePageEnter 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  will-change: transform, opacity, filter;
-}
-
-.animate-logo-enter {
-  animation: logoPowerOn 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-}
-
-.animate-header-enter {
-  animation: slideDownHeader 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-.animate-sidebar-enter {
-  animation: slideInSidebar 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-.animate-card-stagger-1 {
-  animation: staggerCardEntrance 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.08s both;
-}
-
-.animate-card-stagger-2 {
-  animation: staggerCardEntrance 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.16s both;
-}
-
-.animate-card-stagger-3 {
-  animation: staggerCardEntrance 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.24s both;
-}
-
-.animate-card-stagger-4 {
-  animation: staggerCardEntrance 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.32s both;
-}
-
-.animate-card-stagger-5 {
-  animation: staggerCardEntrance 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.40s both;
-}
-
-/* Respect user's reduced motion settings */
-@media (prefers-reduced-motion: reduce) {
-  .animate-page-enter,
-  .animate-logo-enter,
-  .animate-header-enter,
-  .animate-sidebar-enter,
-  .animate-card-stagger-1,
-  .animate-card-stagger-2,
-  .animate-card-stagger-3,
-  .animate-card-stagger-4,
-  .animate-card-stagger-5 {
-    animation: none !important;
-    opacity: 1 !important;
-    transform: none !important;
-    filter: none !important;
-  }
-}
-
-/* Glassmorphism & Theme Utilities */
-.glass-panel {
-  background: var(--card-glass);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--border-subtle);
-}
-
-.glass-panel-raised {
-  background: var(--surface-raised);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  border: 1px solid var(--border);
-}
-
-.glow-ambient {
-  box-shadow: var(--glow-shadow);
-}
-
-/* Premium Neumorphism Design System for All Three Themes */
-/* 1. Neumorphic Buttons & Icon Surfaces */
-.neumorphic-raised {
-  background: var(--surface-raised);
-  box-shadow: 
-    4px 4px 10px rgba(0, 0, 0, 0.45),
-    -3px -3px 8px rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--border-subtle);
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-[data-theme="light"] .neumorphic-raised {
-  background: #FFFFFF;
-  box-shadow: 
-    5px 5px 12px rgba(160, 175, 205, 0.4),
-    -4px -4px 10px rgba(255, 255, 255, 0.95);
-  border: 1px solid rgba(214, 226, 245, 0.9);
-}
-
-[data-theme="colorful"] .neumorphic-raised {
-  background: rgba(31, 21, 74, 0.65);
-  box-shadow: 
-    4px 4px 12px rgba(11, 7, 32, 0.6),
-    -3px -3px 8px rgba(192, 132, 252, 0.12);
-  border: 1px solid rgba(56, 36, 112, 0.85);
-}
-
-.neumorphic-raised:hover {
-  transform: translateY(-2px);
-  box-shadow: 
-    6px 6px 14px rgba(0, 0, 0, 0.55),
-    -4px -4px 10px rgba(255, 255, 255, 0.08);
-}
-
-[data-theme="light"] .neumorphic-raised:hover {
-  box-shadow: 
-    7px 7px 16px rgba(160, 175, 205, 0.5),
-    -5px -5px 12px rgba(255, 255, 255, 1);
-}
-
-[data-theme="colorful"] .neumorphic-raised:hover {
-  box-shadow: 
-    6px 6px 16px rgba(11, 7, 32, 0.7),
-    -4px -4px 12px rgba(192, 132, 252, 0.2);
-}
-
-.neumorphic-raised:active,
-.neumorphic-inset {
-  transform: translateY(1px);
-  box-shadow: 
-    inset 3px 3px 6px rgba(0, 0, 0, 0.5),
-    inset -2px -2px 5px rgba(255, 255, 255, 0.05) !important;
-}
-
-[data-theme="light"] .neumorphic-raised:active,
-[data-theme="light"] .neumorphic-inset {
-  box-shadow: 
-    inset 4px 4px 8px rgba(160, 175, 205, 0.45),
-    inset -3px -3px 7px rgba(255, 255, 255, 0.9) !important;
-}
-
-[data-theme="colorful"] .neumorphic-raised:active,
-[data-theme="colorful"] .neumorphic-inset {
-  box-shadow: 
-    inset 3px 3px 7px rgba(11, 7, 32, 0.65),
-    inset -2px -2px 6px rgba(192, 132, 252, 0.15) !important;
-}
-
-/* 2. Neumorphic Primary Gradient Button */
-.neumorphic-primary {
-  background: linear-gradient(135deg, #168BFF 0%, #20D9FF 50%, #914BFF 100%);
-  color: #FFFFFF;
-  box-shadow: 
-    4px 4px 12px rgba(0, 0, 0, 0.4),
-    -2px -2px 6px rgba(255, 255, 255, 0.15),
-    0 0 20px rgba(22, 139, 255, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.neumorphic-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 
-    6px 6px 16px rgba(0, 0, 0, 0.5),
-    -3px -3px 8px rgba(255, 255, 255, 0.25),
-    0 0 30px rgba(32, 217, 255, 0.6);
-}
-
-.neumorphic-primary:active {
-  transform: translateY(1px) scale(0.98);
-  box-shadow: 
-    inset 3px 3px 6px rgba(0, 0, 0, 0.4),
-    inset -2px -2px 5px rgba(255, 255, 255, 0.2),
-    0 0 15px rgba(22, 139, 255, 0.3) !important;
-}
-
-/* 3. Circular Neumorphic Icon Button */
-.neumorphic-circle {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 9999px;
-  background: var(--surface-raised);
-  box-shadow: 
-    4px 4px 10px rgba(0, 0, 0, 0.4),
-    -3px -3px 8px rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--border-subtle);
-  transition: all 0.25s ease;
-}
-
-[data-theme="light"] .neumorphic-circle {
-  background: #FFFFFF;
-  box-shadow: 
-    4px 4px 10px rgba(160, 175, 205, 0.35),
-    -3px -3px 8px rgba(255, 255, 255, 0.95);
-  border: 1px solid rgba(214, 226, 245, 0.85);
-}
-
-[data-theme="colorful"] .neumorphic-circle {
-  background: rgba(31, 21, 74, 0.65);
-  box-shadow: 
-    4px 4px 10px rgba(11, 7, 32, 0.5),
-    -2px -2px 6px rgba(192, 132, 252, 0.15);
-  border: 1px solid rgba(56, 36, 112, 0.85);
-}
-
-.neumorphic-circle:hover {
-  transform: translateY(-2px);
-  box-shadow: 
-    5px 5px 14px rgba(0, 0, 0, 0.5),
-    -3px -3px 9px rgba(255, 255, 255, 0.09);
-  color: var(--accent);
-}
-
-[data-theme="light"] .neumorphic-circle:hover {
-  box-shadow: 
-    6px 6px 14px rgba(160, 175, 205, 0.45),
-    -4px -4px 10px rgba(255, 255, 255, 1);
-}
-
-.neumorphic-circle:active {
-  transform: translateY(1px);
-  box-shadow: 
-    inset 3px 3px 6px rgba(0, 0, 0, 0.45),
-    inset -2px -2px 5px rgba(255, 255, 255, 0.05) !important;
-}
-
-[data-theme="light"] .neumorphic-circle:active {
-  box-shadow: 
-    inset 3px 3px 6px rgba(160, 175, 205, 0.4),
-    inset -2px -2px 5px rgba(255, 255, 255, 0.9) !important;
+.no-scrollbar {
+  scrollbar-width: none;
 }
