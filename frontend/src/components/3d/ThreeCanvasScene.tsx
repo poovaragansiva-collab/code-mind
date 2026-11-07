@@ -3,21 +3,20 @@
 import { Canvas, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { FloatingParticles } from "./FloatingParticles";
-import { NeuralNetwork } from "./NeuralNetwork";
-import { NeuralConnections } from "./NeuralConnections";
-import { FlowingEnergyStreams } from "./FlowingEnergyStreams";
-import { GeometricStructures } from "./GeometricStructures";
-import { PersistentLivingOrb } from "./PersistentLivingOrb";
+import { FlowingEnergyRibbons } from "./FlowingEnergyRibbons";
+import { AIEnergyArchitecture } from "./AIEnergyArchitecture";
+import { CodeUniverseElements } from "./CodeUniverseElements";
 import type { IntensityMode } from "./NeuralBackground";
 
-function CameraRig() {
+function CinematicCameraRig() {
   useFrame((state) => {
-    const targetX = state.pointer.x * 1.0;
-    const targetY = state.pointer.y * 0.6;
+    // Cinematic camera parallax with smooth dampening
+    const targetX = state.pointer.x * 1.4;
+    const targetY = state.pointer.y * 0.8;
 
-    state.camera.position.x = THREE.MathUtils.lerp(state.camera.position.x, targetX, 0.04);
-    state.camera.position.y = THREE.MathUtils.lerp(state.camera.position.y, targetY, 0.04);
-    state.camera.lookAt(0, 0, 0);
+    state.camera.position.x = THREE.MathUtils.lerp(state.camera.position.x, targetX, 0.035);
+    state.camera.position.y = THREE.MathUtils.lerp(state.camera.position.y, targetY, 0.035);
+    state.camera.lookAt(1.5, 0, 0); // Subtle offset focus towards the right-side architecture
   });
 
   return null;
@@ -28,12 +27,11 @@ export function ThreeCanvasScene({ mode }: { mode: IntensityMode }) {
   const isIntelligence = mode === "intelligence";
   const isArchitecture = mode === "architecture";
 
-  const particleCount = isOverview ? 240 : isIntelligence || isArchitecture ? 180 : mode === "subtle" ? 110 : 70;
-  const nodeCount = isOverview ? 60 : isIntelligence ? 65 : isArchitecture ? 45 : 25;
+  const particleCount = isOverview ? 220 : isIntelligence || isArchitecture ? 160 : mode === "subtle" ? 100 : 60;
 
   return (
     <Canvas
-      camera={{ position: [0, 0, 15], fov: 48 }}
+      camera={{ position: [0, 0.2, 14], fov: 46 }}
       dpr={[1, 1.5]}
       gl={{
         antialias: true,
@@ -50,33 +48,19 @@ export function ThreeCanvasScene({ mode }: { mode: IntensityMode }) {
         left: 0,
       }}
     >
-      <CameraRig />
+      <CinematicCameraRig />
 
-      {/* Floating Synaptic Particles in Deep Space */}
-      <FloatingParticles count={particleCount} speed={isOverview ? 0.45 : 0.28} />
+      {/* 1. Ambient Digital Cybernetic Particles */}
+      <FloatingParticles count={particleCount} speed={isOverview ? 0.4 : 0.25} />
 
-      {/* Neural Synapse Network Mesh */}
-      <NeuralNetwork
-        nodeCount={nodeCount}
-        intensity={isOverview ? 1.1 : isIntelligence ? 1.2 : 0.75}
-        maxDistance={isOverview ? 5.6 : 4.8}
-      />
+      {/* 2. Flowing 3D Energy Ribbons swooping across the scene */}
+      <FlowingEnergyRibbons />
 
-      {/* Specialized Neural Connections & Pulsing Nodes */}
-      {(isOverview || isIntelligence) && (
-        <NeuralConnections nodeCount={isOverview ? 36 : 42} />
-      )}
+      {/* 3. Floating 3D Programming Symbols & Holographic Code Panels */}
+      <CodeUniverseElements />
 
-      {/* Flowing Curved Energy Streams */}
-      {(isOverview || isArchitecture) && (
-        <FlowingEnergyStreams streamCount={isOverview ? 6 : 4} speed={0.4} />
-      )}
-
-      {/* Holographic Geometric Rings & Cubes */}
-      {(isOverview || isIntelligence) && <GeometricStructures />}
-
-      {/* ONE CONTINUOUS PERSISTENT LIVING NEURAL SPHERE */}
-      <PersistentLivingOrb />
+      {/* 4. NEW MAIN 3D AI ENERGY ARCHITECTURE (Gateway, Crystal Spire, Processor Core) */}
+      <AIEnergyArchitecture />
     </Canvas>
   );
 }
