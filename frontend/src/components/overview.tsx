@@ -25,6 +25,12 @@ import { MetricCard } from "@/components/dashboard/MetricCard";
 import { QuickActionCard } from "@/components/dashboard/QuickActionCard";
 import { ScrollDownButton } from "@/components/ui/ScrollDownButton";
 import { useAIJourney } from "@/lib/ai-journey-context";
+import {
+  fetchLatestAnalysis,
+  fetchRepositories,
+  type OrchestratedAnalysis,
+  type RepoItem,
+} from "@/lib/api";
 
 // Dedicated hero 3D visual component matching the architectural focus
 const HeroOrbVisual = dynamic(
@@ -49,6 +55,8 @@ type ApiState = "checking" | "online" | "unavailable";
 export function Overview() {
   const [health, setHealth] = useState<ApiHealth | null>(null);
   const [apiState, setApiState] = useState<ApiState>("checking");
+  const [analysis, setAnalysis] = useState<OrchestratedAnalysis | null>(null);
+  const [repos, setRepos] = useState<RepoItem[]>([]);
   const journey = useAIJourney();
 
   const fetchHealth = useCallback(() => {
@@ -83,6 +91,18 @@ export function Overview() {
       .catch(() => {
         if (active) setApiState("unavailable");
       });
+
+    fetchLatestAnalysis("codemind/ai-core")
+      .then((data) => {
+        if (active && data) setAnalysis(data);
+      })
+      .catch(() => undefined);
+
+    fetchRepositories()
+      .then((data) => {
+        if (active && data) setRepos(data);
+      })
+      .catch(() => undefined);
 
     return () => {
       active = false;
@@ -243,37 +263,43 @@ export function Overview() {
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <MetricCard
             label="Total Repositories"
-            value="3"
-            change="+1 this week"
-            trend="up"
+            value={repos.length > 0 ? repos.length.toString() : "0"}
+            change={repos.length > 0 ? "Connected" : "No repos"}
+            trend="neutral"
             note="Connected GitHub repositories"
             icon={GitBranch}
             isDemo={false}
           />
           <MetricCard
             label="Analysis Runs"
-            value="18"
-            change="+6 today"
-            trend="up"
-            note="Scanned commits & pull requests"
+            value={analysis ? "1" : "0"}
+            change={analysis ? "Latest run recorded" : "Pending scan"}
+            trend={analysis ? "up" : "neutral"}
+            note="Scanned repository workspaces"
             icon={Activity}
             isDemo={false}
           />
           <MetricCard
             label="Open Findings"
-            value="4"
-            change="-2 resolved"
-            trend="down"
+            value={analysis?.findings ? analysis.findings.length.toString() : "0"}
+            change={analysis ? `${analysis.critical_risks?.length || 0} critical risks` : "No scans"}
+            trend={analysis?.findings?.length ? "down" : "neutral"}
             note="Actionable suggestions pending"
             icon={FileCode2}
             isDemo={false}
           />
           <MetricCard
             label="Security Health"
-            value="98.2%"
-            change="Optimal"
-            trend="up"
-            note="0 critical CVEs detected"
+            value={
+              analysis?.security_score !== null && analysis?.security_score !== undefined
+                ? `${analysis.security_score}%`
+                : analysis
+                ? "Optimal"
+                : "Pending"
+            }
+            change={analysis?.security_score ? "Calculated" : "Awaiting scan"}
+            trend={analysis?.security_score ? "up" : "neutral"}
+            note="Based on multi-agent evaluation"
             icon={ShieldCheck}
             isDemo={false}
           />
@@ -308,57 +334,79 @@ export function Overview() {
             </CardHeader>
 
             <CardContent className="space-y-3">
-              {[
-                {
-                  title: "Code review generated for PR #42",
-                  repo: "codemind/ai-core",
-                  sha: "e8f190c",
-                  time: "12m ago",
-                  type: "review",
-                },
-                {
-                  title: "Security scan verified 0 vulnerabilities",
-                  repo: "payments/checkout-worker",
-                  sha: "c410aa7",
-                  time: "1h ago",
-                  type: "security",
-                },
-                {
-                  title: "Engineering memory learned error boundary rule",
-                  repo: "org/web-service-v2",
-                  sha: "a998bb3",
-                  time: "3h ago",
-                  type: "memory",
-                },
-                {
-                  title: "Architecture graph synchronized 8 modules",
-                  repo: "codemind/ai-core",
-                  sha: "d3341ab",
-                  time: "6h ago",
-                  type: "arch",
-                },
-              ].map((item, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-center justify-between rounded-xl border border-line bg-panel-raised p-3.5 transition-colors hover:border-accent"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-panel border border-line text-accent">
-                      {item.type === "review" && <FileCode2 size={15} />}
-                      {item.type === "security" && <ShieldCheck size={15} />}
-                      {item.type === "memory" && <BrainCircuit size={15} />}
-                      {item.type === "arch" && <Boxes size={15} />}
+              {analysis ? (
+                [
+                  {
+                    title: `Multi-agent review: ${analysis.findings.length} findings evaluated`,
+                    repo: analysis.repo_id,
+                    sha: "latest",
+                    time: "Latest scan",
+                    type: "review" as const,
+                  },
+                  {
+                    title: `Security posture evaluated: ${analysis.security_score ?? 100}% defense score`,
+                    repo: analysis.repo_id,
+                    sha: "latest",
+                    time: "Latest scan",
+                    type: "security" as const,
+                  },
+                  ...(analysis.memories_used
+                    ? [
+                        {
+                          title: "Hindsight memory recalled team engineering conventions",
+                          repo: analysis.repo_id,
+                          sha: "hindsight",
+                          time: "Synced",
+                          type: "memory" as const,
+                        },
+                      ]
+                    : []),
+                  ...(analysis.trade_offs && analysis.trade_offs.length > 0
+                    ? [
+                        {
+                          title: `Architecture agent identified ${analysis.trade_offs.length} system trade-offs`,
+                          repo: analysis.repo_id,
+                          sha: "architect",
+                          time: "Synthesized",
+                          type: "arch" as const,
+                        },
+                      ]
+                    : []),
+                ].map((item, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-center justify-between rounded-xl border border-line bg-panel-raised p-3.5 transition-colors hover:border-accent"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-panel border border-line text-accent">
+                        {item.type === "review" && <FileCode2 size={15} />}
+                        {item.type === "security" && <ShieldCheck size={15} />}
+                        {item.type === "memory" && <BrainCircuit size={15} />}
+                        {item.type === "arch" && <Boxes size={15} />}
+                      </div>
+                      <div>
+                        <p className="text-xs font-medium text-ink">{item.title}</p>
+                        <p className="text-[11px] font-mono text-muted">
+                          {item.repo} · <span className="text-accent">{item.sha}</span>
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-xs font-medium text-ink">{item.title}</p>
-                      <p className="text-[11px] font-mono text-muted">
-                        {item.repo} · <span className="text-accent">{item.sha}</span>
-                      </p>
-                    </div>
+                    <span className="text-[11px] font-mono text-muted">{item.time}</span>
                   </div>
-                  <span className="text-[11px] font-mono text-muted">{item.time}</span>
+                ))
+              ) : (
+                <div className="p-8 text-center space-y-3 border border-dashed border-line rounded-xl">
+                  <p className="text-xs text-muted">
+                    No recent analysis activity recorded. Start a code review to generate live telemetry.
+                  </p>
+                  <Button asChild size="sm" variant="outline">
+                    <Link href="/reviews">
+                      <FileCode2 size={14} className="mr-1.5" />
+                      Start Code Review
+                    </Link>
+                  </Button>
                 </div>
-              ))}
+              )}
             </CardContent>
           </Card>
 

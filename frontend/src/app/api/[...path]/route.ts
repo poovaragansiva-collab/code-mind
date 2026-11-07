@@ -90,7 +90,7 @@ async function proxy(request: NextRequest, context: RouteContext): Promise<Respo
       body,
       cache: "no-store",
       redirect: "manual",
-      signal: AbortSignal.timeout(5_000),
+      signal: AbortSignal.timeout(60_000),
     });
     const responseHeaders = new Headers();
     for (const header of ALLOWED_RESPONSE_HEADERS) {

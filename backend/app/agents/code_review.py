@@ -19,13 +19,22 @@ import textwrap
 from groq import AsyncGroq
 
 from app.core.settings import get_settings
-from app.memory.service import recall_memories, reflect_on_memories, retain_memory
+from app.memory.service import (
+    TAG_FINDINGS,
+    recall_memories,
+    reflect_on_memories,
+    retain_memory,
+)
 
 logger = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
-# Prompt templates
+# Priority definitions
 # ---------------------------------------------------------------------------
+# P0 — Critical security or data exposure.
+# P1 — Major logic or application failure.
+# P2 — Performance and maintainability issues.
+# P3 — Style and conventions.
 
 _SYSTEM_PROMPT_TEMPLATE = textwrap.dedent("""\
     You are CodeMind, an engineering-intelligence agent that analyses source code
@@ -37,11 +46,17 @@ _SYSTEM_PROMPT_TEMPLATE = textwrap.dedent("""\
 
     ## Instructions
     - Return ONLY valid JSON matching the schema below — no markdown fences, no prose outside JSON.
-    - If past memory exists, use it directly to detect recurring bugs, honor accepted team conventions,
-      and avoid re-flagging previously rejected suggestions.
+    - If past memory exists, use it directly to detect recurring bugs, honor accepted team
+      conventions, and avoid re-flagging previously rejected suggestions.
     - If past memory is empty, provide thorough first-pass findings.
-    - Every finding must have: id, category (quality|security|architecture|performance),
-      severity (critical|high|medium|low|info), file, line (or null), message, recommendation.
+    - Every finding must be classified into a priority level:
+      * P0: Critical security or data exposure
+      * P1: Major logic or application failure
+      * P2: Performance and maintainability issues
+      * P3: Style and conventions
+    - Every finding must have: id, priority (P0|P1|P2|P3), category
+      (quality|security|architecture|performance), severity (critical|high|medium|low|info),
+      file, line (or null), message, recommendation.
     - Overall scores are integers 0–100 (100 = best).
 
     ## Response schema
@@ -53,6 +68,7 @@ _SYSTEM_PROMPT_TEMPLATE = textwrap.dedent("""\
       "findings": [
         {{
           "id": "<unique string, e.g. finding-1>",
+          "priority": "P0|P1|P2|P3",
           "category": "quality|security|architecture|performance",
           "severity": "critical|high|medium|low|info",
           "file": "<file path or null>",
@@ -61,7 +77,7 @@ _SYSTEM_PROMPT_TEMPLATE = textwrap.dedent("""\
           "recommendation": "<how to fix it>"
         }}
       ],
-      "memory_influenced": <true if past memory directly influenced any score or finding, else false>,
+      "memory_influenced": <true if past memory directly influenced any score/finding, else false>,
       "patterns_detected": ["<pattern1>", "<pattern2>"]
     }}
 """)
@@ -146,9 +162,16 @@ async def analyze_repository(
         logger.warning("Groq returned non-JSON; wrapping raw text.")
         analysis = {"summary": raw, "findings": [], "memory_influenced": False}
 
+    # Normalize findings priorities (P0, P1, P2, P3)
+    for f in analysis.get("findings", []):
+        f["priority"] = _normalize_finding_priority(f)
+
     # 5. Retain findings into Hindsight for next time --------------------------
     findings_summary = _build_retention_text(repo_id, analysis)
-    await retain_memory(bank_id=repo_id, content=findings_summary)
+    try:
+        await retain_memory(bank_id=repo_id, content=findings_summary, tag=TAG_FINDINGS)
+    except Exception:
+        logger.warning("Failed to retain memory in Hindsight for %r", repo_id)
 
     # 6. Enrich response with meta-fields --------------------------------------
     analysis.setdefault("repo_id", repo_id)
@@ -165,8 +188,24 @@ async def analyze_repository(
 
 
 # ---------------------------------------------------------------------------
-# Helper: build a compact retention text from an analysis result
+# Helper: priority normalization and retention formatting
 # ---------------------------------------------------------------------------
+
+
+def _normalize_finding_priority(finding: dict) -> str:
+    """Ensure every finding has a valid P0-P3 priority classification."""
+    p = str(finding.get("priority", "")).upper()
+    if p in ("P0", "P1", "P2", "P3"):
+        return p
+    sev = str(finding.get("severity", "")).lower()
+    cat = str(finding.get("category", "")).lower()
+    if sev == "critical" or cat == "security":
+        return "P0"
+    if sev == "high" or cat in ("quality", "logic"):
+        return "P1"
+    if sev == "medium" or cat in ("performance", "architecture"):
+        return "P2"
+    return "P3"
 
 
 def _build_retention_text(repo_id: str, analysis: dict) -> str:
@@ -183,8 +222,8 @@ def _build_retention_text(repo_id: str, analysis: dict) -> str:
         lines.append("Detected patterns: " + ", ".join(patterns))
     for f in analysis.get("findings", [])[:10]:
         lines.append(
-            f"[{f.get('severity','?').upper()}] {f.get('category','?')} — "
-            f"{f.get('file','?')}:{f.get('line','?')} — "
+            f"[{f.get('priority', 'P2')}:{f.get('severity','?').upper()}] "
+            f"{f.get('category','?')} — {f.get('file','?')}:{f.get('line','?')} — "
             f"{f.get('message','?')} | Fix: {f.get('recommendation','?')}"
         )
     return "\n".join(lines)

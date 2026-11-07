@@ -91,13 +91,25 @@ def _format_recall_result(res: Any) -> str:
 # ---------------------------------------------------------------------------
 
 
-async def retain_memory(bank_id: str, content: str) -> None:
+# Common semantic tags for memory categorization
+TAG_ADR = "ADR"
+TAG_SECURITY_RULE = "SECURITY_RULE"
+TAG_TEAM_CONVENTION = "TEAM_CONVENTION"
+TAG_FEEDBACK_REJECTED = "FEEDBACK:REJECTED"
+TAG_FEEDBACK_ACCEPTED = "FEEDBACK:ACCEPTED"
+TAG_FINDINGS = "FINDINGS"
+
+
+async def retain_memory(bank_id: str, content: str, *, tag: str | None = None) -> None:
     """Store a piece of engineering knowledge in the given memory bank.
 
     Args:
         bank_id: Raw or clean repo identifier.
         content: Free-form text — findings, decisions, feedback, bug summaries.
+        tag: Optional semantic category prefix (e.g. ADR, SECURITY_RULE, FEEDBACK).
     """
+    if tag:
+        content = f"[{tag.upper()}] {content}"
     safe_bank_id = sanitize_bank_id(bank_id)
     client = get_hindsight_client()
     await ensure_bank_exists(client, safe_bank_id)
@@ -158,7 +170,9 @@ async def reflect_on_memories(bank_id: str, query: str) -> str:
     await ensure_bank_exists(client, safe_bank_id)
     try:
         result = await client.areflect(bank_id=safe_bank_id, query=query)
-        insight: str = getattr(result, "text", str(result)) if not isinstance(result, str) else result
+        insight: str = (
+            result if isinstance(result, str) else getattr(result, "text", str(result))
+        )
         logger.info("Reflected %d chars from bank %r", len(insight), safe_bank_id)
         return insight
     except Exception:
