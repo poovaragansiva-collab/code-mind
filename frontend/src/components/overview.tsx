@@ -1,8 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, useCallback } from "react";
-import dynamic from "next/dynamic";
+import { useEffect, useState } from "react";
 import {
   Activity,
   ArrowRight,
@@ -11,26 +10,11 @@ import {
   GitBranch,
   ShieldCheck,
   Sparkles,
-  FileCode2,
-  Boxes,
-  RefreshCw,
-  Search,
-  Code2,
-  Zap,
+  Waypoints,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Badge, Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/surfaces";
-import { MetricCard } from "@/components/dashboard/MetricCard";
-import { QuickActionCard } from "@/components/dashboard/QuickActionCard";
-import { ScrollDownButton } from "@/components/ui/ScrollDownButton";
-import { useAIJourney } from "@/lib/ai-journey-context";
-
-// Dynamically import dedicated hero 3D visual component with scroll capability
-const HeroOrbVisual = dynamic(
-  () => import("@/components/3d/HeroOrbVisual").then((mod) => mod.HeroOrbVisual),
-  { ssr: false }
-);
 
 type ComponentState = "configured" | "not_configured";
 type ApiHealth = {
@@ -46,33 +30,36 @@ type ApiHealth = {
 
 type ApiState = "checking" | "online" | "unavailable";
 
+const emptyMetrics = [
+  { label: "Repositories", note: "Connect a GitHub repository" },
+  { label: "Analysis runs", note: "No analysis history yet" },
+  { label: "Open findings", note: "Requires an analyzed commit" },
+  { label: "Security findings", note: "Requires a supported scan" },
+];
+
+function StatusDot({ tone = "amber" }: { tone?: "green" | "amber" | "red" }) {
+  const styles = {
+    green: "bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,.35)]",
+    amber: "bg-amber-300",
+    red: "bg-rose-400",
+  };
+  return <span aria-hidden="true" className={`h-1.5 w-1.5 rounded-full ${styles[tone]}`} />;
+}
+
+function statusLabel(state: ComponentState | undefined) {
+  return state === "configured" ? "Configured" : "Not configured";
+}
+
 export function Overview() {
   const [health, setHealth] = useState<ApiHealth | null>(null);
   const [apiState, setApiState] = useState<ApiState>("checking");
-  const journey = useAIJourney();
-
-  const fetchHealth = useCallback(() => {
-    fetch("/api/health", { cache: "no-store" })
-      .then(async (response) => {
-        const payload = (await response.json()) as ApiHealth;
-        if (response.ok) {
-          setHealth(payload);
-          setApiState("online");
-        } else {
-          setApiState("unavailable");
-        }
-      })
-      .catch(() => {
-        setApiState("unavailable");
-      });
-  }, []);
 
   useEffect(() => {
-    let active = true;
+    let current = true;
     fetch("/api/health", { cache: "no-store" })
       .then(async (response) => {
         const payload = (await response.json()) as ApiHealth;
-        if (!active) return;
+        if (!current) return;
         if (response.ok) {
           setHealth(payload);
           setApiState("online");
@@ -81,395 +68,177 @@ export function Overview() {
         }
       })
       .catch(() => {
-        if (active) setApiState("unavailable");
+        if (current) setApiState("unavailable");
       });
-
     return () => {
-      active = false;
+      current = false;
     };
   }, []);
 
   const databaseLabel =
     !health
-      ? apiState === "checking"
-        ? "Checking..."
-        : "Status unavailable"
+      ? apiState === "checking" ? "Checking" : "Status unavailable"
       : health.database.status === "connected"
-      ? "Connected (PostgreSQL)"
+      ? "Connected"
       : health.database.status === "unavailable"
-      ? "Cannot connect"
-      : "PostgreSQL DSN required";
+        ? "Cannot connect"
+        : "PostgreSQL DSN required";
 
   const rows = [
     {
-      label: "FastAPI Core",
-      value:
-        apiState === "online"
-          ? health?.status === "healthy"
-            ? "API + PostgreSQL active"
-            : "API reachable · configuration pending"
-          : apiState === "checking"
-          ? "Checking..."
-          : "Backend offline",
-      tone:
-        apiState === "online"
-          ? health?.status === "healthy"
-            ? ("green" as const)
-            : ("amber" as const)
-          : apiState === "checking"
-          ? ("amber" as const)
-          : ("red" as const),
+      label: "API service",
+      value: apiState === "online" ? (health?.status === "healthy" ? "API + PostgreSQL healthy" : "API reachable · setup required") : apiState === "checking" ? "Checking" : "Unavailable",
+      tone: apiState === "online" ? (health?.status === "healthy" ? "green" : "amber") : apiState === "checking" ? "amber" : "red",
       icon: Activity,
     },
     {
-      label: "PostgreSQL Database",
+      label: "PostgreSQL",
       value: databaseLabel,
-      tone:
-        health?.database.status === "connected"
-          ? ("green" as const)
-          : health?.database.status === "unavailable"
-          ? ("red" as const)
-          : ("amber" as const),
+      tone: health?.database.status === "connected" ? "green" : health?.database.status === "unavailable" ? "red" : "amber",
       icon: Database,
     },
     {
-      label: "GitHub App Integration",
-      value: health?.integrations.github_app === "configured" ? "Configured" : "Not configured",
-      tone: health?.integrations.github_app === "configured" ? ("green" as const) : ("amber" as const),
+      label: "GitHub App",
+      value: statusLabel(health?.integrations.github_app),
+      tone: health?.integrations.github_app === "configured" ? "green" : "amber",
       icon: GitBranch,
     },
     {
-      label: "Groq LPU Engine",
-      value: health?.integrations.groq === "configured" ? "Configured" : "Not configured",
-      tone: health?.integrations.groq === "configured" ? ("green" as const) : ("amber" as const),
+      label: "Groq",
+      value: statusLabel(health?.integrations.groq),
+      tone: health?.integrations.groq === "configured" ? "green" : "amber",
       icon: Sparkles,
     },
     {
-      label: "Hindsight Memory Bank",
-      value: health?.integrations.hindsight === "configured" ? "Configured" : "Not configured",
-      tone: health?.integrations.hindsight === "configured" ? ("green" as const) : ("amber" as const),
+      label: "Hindsight",
+      value: statusLabel(health?.integrations.hindsight),
+      tone: health?.integrations.hindsight === "configured" ? "green" : "amber",
       icon: BrainCircuit,
     },
-  ];
+  ] as const;
 
   return (
-    <div className="space-y-12">
-      {/* SECTION 1: AI Universe Hero with 3D Neural Sphere & Entry Sequence */}
-      <section className="relative overflow-hidden rounded-3xl border border-line bg-[var(--card-glass)] p-6 sm:p-8 lg:p-10 shadow-panel backdrop-blur-2xl">
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1.2fr)_minmax(340px,1fr)] items-center">
-          <div className="relative z-10 max-w-2xl">
-            <div className="flex flex-wrap items-center gap-2.5">
-              <Badge variant="blue">
-                <span className="h-1.5 w-1.5 rounded-full bg-accent animate-ping" />
-                AI Code Review Agent
-              </Badge>
-              <span className="font-mono text-[11px] uppercase tracking-wider text-muted">
-                Deterministic Evidence + Neural Intelligence
-              </span>
-            </div>
-
-            <h1 className="mt-5 text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-ink">
-              Welcome to <span className="bg-gradient-to-r from-accent via-accent-cyan to-violet bg-clip-text text-transparent">CodeMind</span>
-            </h1>
-
-            <p className="mt-4 text-sm sm:text-base leading-relaxed text-muted">
-              Your intelligent code review workspace. Understand your codebase, learn team standards, and improve software quality with AI.
-            </p>
-
-            <div className="mt-8 flex flex-wrap gap-3.5">
-              <Button asChild size="lg" variant="default" onClick={() => journey.triggerNavAction("/reviews")}>
-                <Link href="/reviews">
-                  <FileCode2 size={16} />
-                  Start Code Review
-                  <ArrowRight size={15} />
-                </Link>
-              </Button>
-              <Button asChild size="lg" variant="secondary" onClick={() => journey.triggerNavAction("/repositories")}>
-                <Link href="/repositories">
-                  <GitBranch size={16} />
-                  Explore Repositories
-                </Link>
-              </Button>
-            </div>
+    <div className="space-y-7">
+      <section className="relative overflow-hidden rounded-2xl border border-line bg-panel px-5 py-7 shadow-panel sm:px-8 sm:py-9">
+        <div className="pointer-events-none absolute -right-16 -top-28 h-72 w-72 rounded-full border border-accent/[0.08]" />
+        <div className="pointer-events-none absolute -right-2 -top-14 h-44 w-44 rounded-full border border-violet/[0.10]" />
+        <div className="relative max-w-3xl">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge variant="blue"><span className="h-1.5 w-1.5 rounded-full bg-accent" /> Engineering intelligence</Badge>
+            <span className="font-mono text-[10px] uppercase tracking-[0.15em] text-muted/70">Evidence before inference</span>
           </div>
-
-          {/* Prominent 3D Neural Orb Section with Cinematic Power-On Entrance */}
-          <div className="w-full flex items-center justify-center animate-card-stagger-2">
-            <HeroOrbVisual />
+          <h1 className="mt-5 max-w-2xl text-3xl font-semibold tracking-[-0.04em] text-ink sm:text-4xl">
+            Review the commit, <span className="text-[#91c5ff]">not just the repository.</span>
+          </h1>
+          <p className="mt-4 max-w-xl text-sm leading-6 text-muted sm:text-[15px]">
+            CodeMind connects static evidence with engineering memory, so every recommendation can be traced to code and team context.
+          </p>
+          <div className="mt-7 flex flex-wrap gap-3">
+            <Button asChild size="lg">
+              <Link href="/repositories">Repository setup <ArrowRight aria-hidden="true" size={16} /></Link>
+            </Button>
+            <Button asChild size="lg" variant="secondary">
+              <Link href="/intelligence"><Waypoints aria-hidden="true" size={16} /> Explore intelligence</Link>
+            </Button>
           </div>
-        </div>
-
-        {/* Down Arrow Button at the bottom of Section 1 */}
-        <div className="mt-6 flex justify-center border-t border-line/40 pt-5">
-          <ScrollDownButton targetId="section-analysis" />
         </div>
       </section>
 
-      {/* SECTION 2: Intelligent Code Analysis & Metric Signals */}
-      <section id="section-analysis" className="space-y-4 animate-card-stagger-2">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-bold tracking-tight text-ink flex items-center gap-2">
-              <Zap className="text-accent" size={20} />
-              Intelligent Code Analysis
-            </h2>
-            <p className="text-xs text-muted mt-1">
-              Real-time telemetry and deterministic AST insights
-            </p>
-          </div>
-          <Badge variant="blue">Active Telemetry</Badge>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <MetricCard
-            label="Total Repositories"
-            value="3"
-            change="+1 this week"
-            trend="up"
-            note="Connected GitHub repositories"
-            icon={GitBranch}
-            isDemo={false}
-          />
-          <MetricCard
-            label="Analysis Runs"
-            value="18"
-            change="+6 today"
-            trend="up"
-            note="Scanned commits & pull requests"
-            icon={Activity}
-            isDemo={false}
-          />
-          <MetricCard
-            label="Open Findings"
-            value="4"
-            change="-2 resolved"
-            trend="down"
-            note="Actionable suggestions pending"
-            icon={FileCode2}
-            isDemo={false}
-          />
-          <MetricCard
-            label="Security Health"
-            value="98.2%"
-            change="Optimal"
-            trend="up"
-            note="0 critical CVEs detected"
-            icon={ShieldCheck}
-            isDemo={false}
-          />
-        </div>
-      </section>
-
-      {/* SECTION 3: Engineering Intelligence & Core Service Status */}
-      <section id="section-intelligence" className="space-y-4 animate-card-stagger-3">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-bold tracking-tight text-ink flex items-center gap-2">
-              <BrainCircuit className="text-violet" size={20} />
-              Engineering Intelligence
-            </h2>
-            <p className="text-xs text-muted mt-1">
-              Synchronized neural memory feeds and microservice health
-            </p>
-          </div>
-        </div>
-
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1.5fr)_minmax(340px,1fr)]">
-          {/* Recent Activity Card */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-              <div>
-                <CardTitle>Recent Activity</CardTitle>
-                <CardDescription className="mt-1">
-                  Continuous reviews, security audits, and neural memory syncs
-                </CardDescription>
-              </div>
-              <Badge variant="blue">Live Feed</Badge>
-            </CardHeader>
-
-            <CardContent className="space-y-3">
-              {[
-                {
-                  title: "Code review generated for PR #42",
-                  repo: "codemind/ai-core",
-                  sha: "e8f190c",
-                  time: "12m ago",
-                  type: "review",
-                },
-                {
-                  title: "Security scan verified 0 vulnerabilities",
-                  repo: "payments/checkout-worker",
-                  sha: "c410aa7",
-                  time: "1h ago",
-                  type: "security",
-                },
-                {
-                  title: "Engineering memory learned error boundary rule",
-                  repo: "org/web-service-v2",
-                  sha: "a998bb3",
-                  time: "3h ago",
-                  type: "memory",
-                },
-                {
-                  title: "Architecture graph synchronized 8 modules",
-                  repo: "codemind/ai-core",
-                  sha: "d3341ab",
-                  time: "6h ago",
-                  type: "arch",
-                },
-              ].map((item, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-center justify-between rounded-xl border border-line bg-panel-raised p-3.5 transition-colors hover:border-accent"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-panel border border-line text-accent">
-                      {item.type === "review" && <FileCode2 size={15} />}
-                      {item.type === "security" && <ShieldCheck size={15} />}
-                      {item.type === "memory" && <BrainCircuit size={15} />}
-                      {item.type === "arch" && <Boxes size={15} />}
-                    </div>
-                    <div>
-                      <p className="text-xs font-medium text-ink">{item.title}</p>
-                      <p className="text-[11px] font-mono text-muted">
-                        {item.repo} · <span className="text-accent">{item.sha}</span>
-                      </p>
-                    </div>
-                  </div>
-                  <span className="text-[11px] font-mono text-muted">{item.time}</span>
+      <section aria-label="Repository metrics" className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        {emptyMetrics.map((metric, index) => {
+          const Icon = [GitBranch, Activity, ShieldCheck, ShieldCheck][index];
+          return (
+            <Card key={metric.label} className="min-w-0">
+              <CardContent className="p-4 sm:p-5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium text-muted">{metric.label}</span>
+                  <Icon aria-hidden="true" size={16} className="text-muted/75" />
                 </div>
-              ))}
-            </CardContent>
-          </Card>
+                <div className="mt-4 font-mono text-2xl tracking-tight text-ink">—</div>
+                <p className="mt-1 text-[11px] leading-5 text-muted/75">{metric.note}</p>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </section>
 
-          {/* Core Service Status Card */}
-          <Card id="connections">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-              <div>
-                <CardTitle>Core Service Status</CardTitle>
-                <CardDescription className="mt-1">
-                  Real-time API, DB, and intelligence backend indicators
-                </CardDescription>
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.6fr)_minmax(320px,0.9fr)]">
+        <Card>
+          <CardHeader className="flex flex-row items-start justify-between gap-4 space-y-0">
+            <div>
+              <CardTitle>Analysis activity</CardTitle>
+              <CardDescription className="mt-1">Reports are anchored to an immutable commit SHA.</CardDescription>
+            </div>
+            <Badge variant="neutral">No runs recorded</Badge>
+          </CardHeader>
+          <CardContent>
+            <div className="flex min-h-[208px] flex-col items-center justify-center rounded-xl border border-dashed border-line bg-canvas/40 px-5 text-center">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-line bg-panel-raised text-muted">
+                <Activity aria-hidden="true" size={18} />
               </div>
-              <button
-                onClick={() => {
-                  setApiState("checking");
-                  fetchHealth();
-                }}
-                className="neumorphic-circle h-8 w-8 text-muted hover:text-ink cursor-pointer"
-                title="Refresh Health"
-              >
-                <RefreshCw size={13} className={apiState === "checking" ? "animate-spin text-accent" : ""} />
-              </button>
-            </CardHeader>
+              <h2 className="mt-4 text-sm font-medium text-ink">No analysis history yet</h2>
+              <p className="mt-1 max-w-sm text-xs leading-5 text-muted">
+                Activity will appear after a repository is connected and a real analysis completes. No sample results are being shown.
+              </p>
+              <Link href="/repositories" className="mt-4 inline-flex items-center gap-1.5 text-xs font-medium text-[#9bcaff] hover:text-white">
+                View repository setup <ArrowRight aria-hidden="true" size={14} />
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
 
-            <CardContent className="space-y-0">
-              {rows.map((row, index) => {
-                const Icon = row.icon;
-                return (
-                  <div
-                    key={row.label}
-                    className={`flex items-center gap-3 py-3.5 ${
-                      index ? "border-t border-line" : ""
-                    }`}
-                  >
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-panel-raised text-muted">
-                      <Icon size={15} />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs font-medium text-ink">{row.label}</p>
-                      <p className="mt-0.5 truncate text-[11px] text-muted">{row.value}</p>
-                    </div>
-                    <span
-                      className={`h-2 w-2 rounded-full ${
-                        row.tone === "green"
-                          ? "bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]"
-                          : row.tone === "red"
-                          ? "bg-rose-400 shadow-[0_0_8px_rgba(244,63,94,0.5)]"
-                          : "bg-amber-400 shadow-[0_0_8px_rgba(251,191,36,0.5)]"
-                      }`}
-                    />
+        <Card id="connections">
+          <CardHeader>
+            <div className="flex items-center justify-between gap-3">
+              <CardTitle>Core service status</CardTitle>
+              <Badge variant={apiState === "online" && health?.database.status === "connected" ? "green" : "amber"}>
+                <StatusDot tone={apiState === "unavailable" ? "red" : apiState === "online" && health?.database.status === "connected" ? "green" : "amber"} />
+                {apiState === "checking" ? "Checking" : apiState === "unavailable" ? "API unavailable" : health?.database.status === "connected" ? "Core healthy" : "Setup required"}
+              </Badge>
+            </div>
+            <CardDescription>API/PostgreSQL health and provider configuration only; provider reachability is not implied. Credentials are never returned to the browser.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-0">
+            {rows.map((row, index) => {
+              const Icon = row.icon;
+              return (
+                <div key={row.label} className={`flex items-center gap-3 py-3 ${index ? "border-t border-line/70" : ""}`}>
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-panel-raised text-muted">
+                    <Icon aria-hidden="true" size={15} />
                   </div>
-                );
-              })}
-            </CardContent>
-          </Card>
-        </div>
-      </section>
-
-      {/* SECTION 4: Code Quality and Security Features */}
-      <section id="section-quality" className="space-y-4 animate-card-stagger-4">
-        <h2 className="text-xl font-bold tracking-tight text-ink flex items-center gap-2">
-          <ShieldCheck className="text-emerald-500" size={20} />
-          Code Quality & Security Capabilities
-        </h2>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <div className="rounded-2xl border border-line bg-panel p-5 space-y-3 hover:border-accent transition-all">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent/15 text-accent border border-accent/20">
-              <Code2 size={20} />
-            </div>
-            <h3 className="font-semibold text-sm text-ink">AST Static Analysis</h3>
-            <p className="text-xs text-muted leading-relaxed">
-              Tree-sitter parse trees identify syntax anomalies, anti-patterns, and unreachable branches with precision.
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-medium text-ink">{row.label}</p>
+                    <p className="mt-0.5 truncate text-[11px] text-muted">{row.value}</p>
+                  </div>
+                  <StatusDot tone={row.tone} />
+                </div>
+              );
+            })}
+            <p className="border-t border-line/70 pt-3 text-[11px] leading-5 text-muted/80">
+              Live GitHub, Groq, Hindsight, and PostgreSQL behavior will be reported only after configuration and a successful connection check.
             </p>
-          </div>
+          </CardContent>
+        </Card>
+      </div>
 
-          <div className="rounded-2xl border border-line bg-panel p-5 space-y-3 hover:border-accent transition-all">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet/15 text-violet border border-violet/20">
-              <ShieldCheck size={20} />
+      <div className="grid gap-4 md:grid-cols-3">
+        {[
+          { label: "Source-bound", copy: "Every finding is tied to repository evidence and a commit SHA.", icon: GitBranch, tone: "text-[#91c5ff]" },
+          { label: "Scanner-backed", copy: "Security claims require actual scanner output, not model guesses.", icon: ShieldCheck, tone: "text-emerald-300" },
+          { label: "Team-aware", copy: "Relevant engineering memories explain context behind recommendations.", icon: BrainCircuit, tone: "text-violet" },
+        ].map((item) => {
+          const Icon = item.icon;
+          return (
+            <div key={item.label} className="flex gap-3 rounded-xl border border-line/80 bg-panel/50 p-4">
+              <div className={`mt-0.5 ${item.tone}`}><Icon aria-hidden="true" size={17} /></div>
+              <div>
+                <p className="text-xs font-medium text-ink">{item.label}</p>
+                <p className="mt-1 text-xs leading-5 text-muted">{item.copy}</p>
+              </div>
             </div>
-            <h3 className="font-semibold text-sm text-ink">Automated Vulnerability Checks</h3>
-            <p className="text-xs text-muted leading-relaxed">
-              Detect exposed API secrets, SQL injection vectors, and outdated vulnerable dependencies automatically.
-            </p>
-          </div>
-
-          <div className="rounded-2xl border border-line bg-panel p-5 space-y-3 hover:border-accent transition-all">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan/15 text-cyan border border-cyan/20">
-              <Search size={20} />
-            </div>
-            <h3 className="font-semibold text-sm text-ink">Hindsight Knowledge Sync</h3>
-            <p className="text-xs text-muted leading-relaxed">
-              Persist review guidelines across pull requests so AI recommendations match team standards over time.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* SECTION 5: Quick Actions & Final Call to Action */}
-      <section aria-label="Quick Actions" className="space-y-4 animate-card-stagger-5">
-        <h3 className="text-base font-semibold text-ink">Quick Actions</h3>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <QuickActionCard
-            title="Connect Repository"
-            description="Authorize GitHub App to ingest code trees and track commits."
-            icon={GitBranch}
-            href="/repositories"
-            tag="Setup"
-          />
-          <QuickActionCard
-            title="Start Code Review"
-            description="Run AI review agent on branch or commit SHA with AST validation."
-            icon={FileCode2}
-            href="/reviews"
-            tag="AI Agent"
-          />
-          <QuickActionCard
-            title="View Engineering Memory"
-            description="Explore learned coding standards and repository-specific conventions."
-            icon={BrainCircuit}
-            href="/memory"
-            tag="Knowledge"
-          />
-          <QuickActionCard
-            title="Generate Audit Report"
-            description="Download structured security and quality compliance summaries."
-            icon={Activity}
-            href="/reports"
-            tag="Reports"
-          />
-        </div>
-      </section>
+          );
+        })}
+      </div>
     </div>
   );
 }

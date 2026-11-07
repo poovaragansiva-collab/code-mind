@@ -1,22 +1,15 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import { ThemeProvider } from "@/lib/theme-context";
-import { AIJourneyProvider } from "@/lib/ai-journey-context";
+import { GeistMono } from "geist/font/mono";
+import { GeistSans } from "geist/font/sans";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
 export const metadata: Metadata = {
-  title: "CodeMind · AI Code Review Agent",
-  description: "Deterministic AST evidence meets neural engineering intelligence.",
+  title: {
+    default: "CodeMind — Engineering Intelligence",
+    template: "%s — CodeMind",
+  },
+  description:
+    "Repository intelligence grounded in code evidence and engineering memory.",
 };
 
 export default function RootLayout({
@@ -25,14 +18,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <ThemeProvider>
-          <AIJourneyProvider>
-            {children}
-          </AIJourneyProvider>
-        </ThemeProvider>
-      </body>
+    <html lang="en">
+      <body className={`${GeistSans.variable} ${GeistMono.variable}`}>{children}</body>
     </html>
   );
 }
