@@ -1,48 +1,41 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   ShieldCheck,
   ShieldAlert,
+  Lock,
+  ArrowRight,
+  ShieldX,
 } from "lucide-react";
+import Link from "next/link";
 import { Badge, Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/surfaces";
 import { SeverityBadge } from "@/components/reviews/SeverityBadge";
+import { fetchSecurityAnalysis, type SecurityAnalysis } from "@/lib/api";
 
 export default function SecurityPage() {
-  const securityFindings = [
-    {
-      id: "sec-1",
-      title: "Hardcoded API secret token in staging config",
-      severity: "critical" as const,
-      scanner: "TruffleHog / Git Leaks",
-      file: "backend/alembic/env.py.sample:12",
-      status: "Remediated",
-    },
-    {
-      id: "sec-2",
-      title: "Cross-Site Scripting (XSS) via Unsanitized Markdown Render",
-      severity: "high" as const,
-      scanner: "Semgrep SAST",
-      file: "frontend/src/components/reviews/CodeSnippet.tsx:28",
-      status: "Open",
-    },
-    {
-      id: "sec-3",
-      title: "Insecure Deserialization in Redis Cache Worker",
-      severity: "medium" as const,
-      scanner: "Bandit / Python AST",
-      file: "backend/app/core/database.py:91",
-      status: "In Review",
-    },
-    {
-      id: "sec-4",
-      title: "Permissive CORS Wildcard on Localhost API Proxy",
-      severity: "low" as const,
-      scanner: "Semgrep SAST",
-      file: "frontend/src/app/api/[...path]/route.ts:55",
-      status: "Open",
-    },
-  ];
+  const [data, setData] = useState<SecurityAnalysis | null>(null);
+  const [_loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchSecurityAnalysis("codemind/ai-core")
+      .then((res) => {
+        setData(res);
+      })
+      .catch(() => {
+        setData(null);
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  const matrix = data?.risk_matrix || {
+    critical: 0,
+    high: 0,
+    medium: 0,
+    low: 0,
+  };
+
+  const findings = data?.findings || [];
 
   return (
     <div className="space-y-8">
@@ -56,14 +49,21 @@ export default function SecurityPage() {
             Vulnerability & Security Posture
           </h1>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
-            Evidence-backed security scanning. Detect OWASP Top 10 vulnerabilities, secrets leakage, and unsafe dependency packages.
+            Adversarial security scanning. Detect OWASP Top 10 vulnerabilities, secrets leakage, and unsafe injection vectors.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+          {data?.security_score !== undefined && data.security_score !== null ? (
+            <Badge variant="blue" className="text-xs px-3 py-1">
+              Security Score: {data.security_score}/100
+            </Badge>
+          ) : (
+            <Badge variant="neutral">Score: Not Scanned</Badge>
+          )}
           <Badge variant="green">
             <ShieldCheck size={12} className="text-emerald-500" />
-            Scanner Engine Active
+            Adversarial Engine Active
           </Badge>
         </div>
       </div>
@@ -72,77 +72,155 @@ export default function SecurityPage() {
       <div className="grid gap-4 sm:grid-cols-4">
         <Card>
           <CardContent className="p-5">
-            <span className="text-xs font-medium text-muted">Critical CVEs</span>
-            <div className="mt-2 text-3xl font-bold font-mono text-emerald-500">0</div>
-            <p className="mt-1 text-[11px] text-muted">Zero exploitable unpatched flaws</p>
+            <span className="text-xs font-medium text-muted">Critical (P0)</span>
+            <div className={`mt-2 text-3xl font-bold font-mono ${matrix.critical > 0 ? "text-rose-500" : "text-emerald-500"}`}>
+              {data ? matrix.critical : "—"}
+            </div>
+            <p className="mt-1 text-[11px] text-muted">Immediate exploitability</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-5">
-            <span className="text-xs font-medium text-muted">Dependency Security</span>
-            <div className="mt-2 text-3xl font-bold font-mono text-ink">100%</div>
-            <p className="mt-1 text-[11px] text-muted">All npm & uv packages verified</p>
+            <span className="text-xs font-medium text-muted">High Severity (P1)</span>
+            <div className={`mt-2 text-3xl font-bold font-mono ${matrix.high > 0 ? "text-amber-500" : "text-emerald-500"}`}>
+              {data ? matrix.high : "—"}
+            </div>
+            <p className="mt-1 text-[11px] text-muted">Severe application impact</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-5">
-            <span className="text-xs font-medium text-muted">Secrets Detected</span>
-            <div className="mt-2 text-3xl font-bold font-mono text-emerald-500">0</div>
-            <p className="mt-1 text-[11px] text-muted">Commit history clean</p>
+            <span className="text-xs font-medium text-muted">Medium Severity (P2)</span>
+            <div className="mt-2 text-3xl font-bold font-mono text-ink">
+              {data ? matrix.medium : "—"}
+            </div>
+            <p className="mt-1 text-[11px] text-muted">Moderate defense-in-depth</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-5">
-            <span className="text-xs font-medium text-muted">Scan Coverage</span>
-            <div className="mt-2 text-3xl font-bold font-mono text-accent">100%</div>
-            <p className="mt-1 text-[11px] text-muted">Full repository tree analyzed</p>
+            <span className="text-xs font-medium text-muted">Low / Info (P3)</span>
+            <div className="mt-2 text-3xl font-bold font-mono text-muted">
+              {data ? matrix.low : "—"}
+            </div>
+            <p className="mt-1 text-[11px] text-muted">Hardening recommendations</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Security Findings Feed */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <ShieldAlert size={16} className="text-amber-500" />
-            <span>Active Security Audit Log</span>
-          </CardTitle>
-          <CardDescription>
-            Scanner findings verified against source code files and AST tokens
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {securityFindings.map((finding) => (
-            <div
-              key={finding.id}
-              className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-line bg-panel-raised p-4 transition-colors hover:border-accent"
-            >
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <SeverityBadge severity={finding.severity} />
-                  <span className="font-mono text-xs text-muted">{finding.scanner}</span>
-                </div>
-                <h4 className="text-sm font-semibold text-ink">{finding.title}</h4>
-                <p className="font-mono text-[11px] text-muted">{finding.file}</p>
-              </div>
+      {data ? (
+        <>
+          {/* Threat Model Section */}
+          {data.threat_model && data.threat_model.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Lock size={16} className="text-amber-500" />
+                  <span>Adversarial Threat Model</span>
+                </CardTitle>
+                <CardDescription>
+                  Threat scenarios and attack vectors mapped to recommended defensive controls
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {data.threat_model.map((tm, idx) => (
+                  <div key={idx} className="rounded-xl border border-line bg-panel-raised p-4 space-y-1.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <h4 className="text-sm font-semibold text-rose-400 font-mono">{tm.threat}</h4>
+                      <Badge variant="amber">Active Threat Vector</Badge>
+                    </div>
+                    <p className="text-xs text-muted font-mono">Vector: {tm.vector}</p>
+                    <p className="text-xs text-emerald-400 font-mono">Mitigation: {tm.mitigation}</p>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          )}
 
-              <div className="flex items-center gap-3">
-                <Badge
-                  variant={
-                    finding.status === "Remediated"
-                      ? "green"
-                      : finding.status === "In Review"
-                      ? "blue"
-                      : "amber"
-                  }
-                >
-                  {finding.status}
-                </Badge>
-              </div>
+          {/* Security Findings Feed */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <ShieldAlert size={16} className="text-amber-500" />
+                <span>Verified Vulnerabilities & Findings ({findings.length})</span>
+              </CardTitle>
+              <CardDescription>
+                Findings backed by concrete repository evidence, CWE classification, and exact remediation
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {findings.length > 0 ? (
+                findings.map((f, idx) => (
+                  <div
+                    key={f.id || idx}
+                    className="rounded-xl border border-line bg-panel-raised p-4 sm:p-5 space-y-3 transition-colors hover:border-accent"
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <SeverityBadge severity={f.severity || "medium"} />
+                        {f.cwe && <Badge variant="neutral">{f.cwe}</Badge>}
+                        {f.priority && <Badge variant="blue">{f.priority}</Badge>}
+                      </div>
+                      <span className="font-mono text-xs text-muted">
+                        {f.file ? `${f.file}${f.line ? `:${f.line}` : ""}` : "Global context"}
+                      </span>
+                    </div>
+
+                    <div>
+                      <h4 className="text-sm font-semibold text-ink">
+                        {f.message || f.explanation || "Security finding"}
+                      </h4>
+                      {f.owasp_category && (
+                        <p className="text-[11px] text-muted font-mono mt-0.5">
+                          Category: {f.owasp_category}
+                        </p>
+                      )}
+                    </div>
+
+                    {f.evidence && (
+                      <div className="rounded-lg bg-black/40 border border-line-subtle p-3 font-mono text-xs text-rose-300 overflow-x-auto">
+                        <div className="text-[10px] uppercase text-muted mb-1 font-sans">Evidence:</div>
+                        <code>{f.evidence}</code>
+                      </div>
+                    )}
+
+                    {f.recommendation && (
+                      <div className="rounded-lg bg-emerald-950/20 border border-emerald-500/20 p-3 font-mono text-xs text-emerald-300">
+                        <div className="text-[10px] uppercase text-emerald-400 mb-1 font-sans">Remediation:</div>
+                        {f.recommendation}
+                      </div>
+                    )}
+                  </div>
+                ))
+              ) : (
+                <div className="p-6 text-center text-xs text-muted font-mono">
+                  No security vulnerabilities detected. Codebase matches secure coding baseline.
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </>
+      ) : (
+        /* Honest empty state when no analysis has been run yet */
+        <Card variant="glass" className="border-dashed border-line">
+          <CardContent className="p-10 text-center space-y-3">
+            <ShieldX size={32} className="mx-auto text-muted/60" />
+            <h3 className="text-base font-semibold text-ink">No Security Scan Recorded</h3>
+            <p className="text-xs text-muted max-w-md mx-auto leading-relaxed">
+              Adversarial vulnerability detection and threat modeling run during repository analysis. Trigger a scan from the workspace to inspect OWASP Top 10 risks and credential exposures.
+            </p>
+            <div className="pt-2">
+              <Link
+                href="/reviews"
+                className="inline-flex items-center gap-2 text-xs font-semibold text-accent hover:underline"
+              >
+                <span>Trigger Security Scan in Reviews</span>
+                <ArrowRight size={13} />
+              </Link>
             </div>
-          ))}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

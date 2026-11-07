@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import {
   Sparkles,
   BrainCircuit,
@@ -8,47 +9,26 @@ import {
   AlertTriangle,
   Lightbulb,
   CheckCircle,
+  Shield,
+  Layers,
+  ArrowRight,
 } from "lucide-react";
-import { Badge, Card, CardContent } from "@/components/ui/surfaces";
+import { Badge, Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/surfaces";
+import { fetchLatestAnalysis, type OrchestratedAnalysis } from "@/lib/api";
 
 export default function IntelligencePage() {
-  const [activeTab, setActiveTab] = useState<"patterns" | "mistakes">("patterns");
+  const [activeTab, setActiveTab] = useState<"overview" | "patterns" | "risks">("overview");
+  const [data, setData] = useState<OrchestratedAnalysis | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const patterns = [
-    {
-      title: "Result Pattern vs Bare Exceptions",
-      freq: "84% adherence",
-      desc: "Services return a typed Result[T, E] union rather than raising uncaught domain exceptions.",
-      impact: "High Maintainability",
-    },
-    {
-      title: "Context Propagation in Async Workers",
-      freq: "92% adherence",
-      desc: "Correlation IDs and cancellation tokens are plumbed across celery and redis task queues.",
-      impact: "Zero trace drops",
-    },
-    {
-      title: "AST Semantic Linting",
-      freq: "76% adherence",
-      desc: "Tree-sitter queries validate that all exported controller methods have strict schema annotations.",
-      impact: "API Contract Safety",
-    },
-  ];
-
-  const repeatedMistakes = [
-    {
-      issue: "Missing Transaction Rollback on Failure",
-      count: "7 instances flagged",
-      files: "services/billing.py, workers/sync.py",
-      mitigation: "CodeMind auto-suggests context manager `with db.begin():` block.",
-    },
-    {
-      issue: "Unbounded Query Pagination",
-      count: "5 instances flagged",
-      files: "api/routes/users.py, api/routes/events.py",
-      mitigation: "Strict `limit <= 100` enforcement added to engineering memory.",
-    },
-  ];
+  useEffect(() => {
+    fetchLatestAnalysis("codemind/ai-core")
+      .then((res) => {
+        if (res) setData(res);
+      })
+      .catch(() => undefined)
+      .finally(() => setLoading(false));
+  }, []);
 
   return (
     <div className="space-y-8">
@@ -69,49 +49,119 @@ export default function IntelligencePage() {
         <div className="flex items-center gap-2">
           <Badge variant="violet">
             <Sparkles size={12} className="text-violet" />
-            Neural Pattern Model Active
+            Neural Multi-Agent Active
           </Badge>
         </div>
       </div>
 
+      {/* Unified Executive Summary if real analysis exists */}
+      {data?.summary ? (
+        <Card variant="glass" className="border-accent/30 bg-accent/[0.03]">
+          <CardContent className="p-5 sm:p-6 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-accent font-mono uppercase tracking-wider">
+                Multi-Agent Executive Synthesis
+              </span>
+              {data.overall_score !== null && (
+                <Badge variant="blue">Overall Score: {data.overall_score}/100</Badge>
+              )}
+            </div>
+            <p className="text-sm text-ink leading-relaxed font-mono">
+              {data.summary}
+            </p>
+          </CardContent>
+        </Card>
+      ) : !loading ? (
+        <Card variant="glass" className="border-accent/20 bg-accent/[0.02]">
+          <CardContent className="p-5 flex items-center justify-between">
+            <span className="text-xs text-muted">
+              No analysis data recorded yet for codemind/ai-core. Run a multi-agent review to generate team intelligence.
+            </span>
+            <Link
+              href="/reviews"
+              className="inline-flex items-center gap-1.5 text-xs text-accent font-semibold hover:underline"
+            >
+              Start review <ArrowRight size={12} />
+            </Link>
+          </CardContent>
+        </Card>
+      ) : null}
+
       {/* Overview Stat Cards */}
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-4">
         <Card>
           <CardContent className="p-5">
             <div className="flex items-center justify-between text-muted text-xs">
-              <span>Learned Conventions</span>
+              <span>Overall Health</span>
               <BrainCircuit size={16} className="text-accent" />
             </div>
-            <div className="mt-2 text-3xl font-bold font-mono text-ink">42</div>
-            <p className="mt-1 text-[11px] text-muted">Distilled from 120+ team code reviews</p>
+            <div className="mt-2 text-3xl font-bold font-mono text-ink">
+              {data?.overall_score !== null && data?.overall_score !== undefined
+                ? `${data.overall_score}%`
+                : "--"}
+            </div>
+            <p className="mt-1 text-[11px] text-muted">Weighted cross-domain index</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardContent className="p-5">
             <div className="flex items-center justify-between text-muted text-xs">
-              <span>Defect Prevention Rate</span>
-              <TrendingUp size={16} className="text-emerald-400" />
+              <span>Security Posture</span>
+              <Shield size={16} className="text-emerald-400" />
             </div>
-            <div className="mt-2 text-3xl font-bold font-mono text-emerald-400">89.4%</div>
-            <p className="mt-1 text-[11px] text-muted">Repeat mistakes caught before staging</p>
+            <div className="mt-2 text-3xl font-bold font-mono text-emerald-400">
+              {data?.security_score !== null && data?.security_score !== undefined
+                ? `${data.security_score}%`
+                : "--"}
+            </div>
+            <p className="mt-1 text-[11px] text-muted">OWASP & CWE defense score</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardContent className="p-5">
             <div className="flex items-center justify-between text-muted text-xs">
-              <span>Feedback Alignment</span>
-              <CheckCircle size={16} className="text-violet" />
+              <span>Architecture Health</span>
+              <Layers size={16} className="text-accent" />
             </div>
-            <div className="mt-2 text-3xl font-bold font-mono text-ink">95%</div>
-            <p className="mt-1 text-[11px] text-muted">Recommendations accepted by senior reviewers</p>
+            <div className="mt-2 text-3xl font-bold font-mono text-accent">
+              {data?.architecture_score !== null && data?.architecture_score !== undefined
+                ? `${data.architecture_score}%`
+                : "--"}
+            </div>
+            <p className="mt-1 text-[11px] text-muted">Modularity & boundary integrity</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-5">
+            <div className="flex items-center justify-between text-muted text-xs">
+              <span>Maintainability</span>
+              <TrendingUp size={16} className="text-violet" />
+            </div>
+            <div className="mt-2 text-3xl font-bold font-mono text-ink">
+              {data?.maintainability_score !== null && data?.maintainability_score !== undefined
+                ? `${data.maintainability_score}%`
+                : "--"}
+            </div>
+            <p className="mt-1 text-[11px] text-muted">Refactoring complexity index</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Tabs */}
       <div className="flex gap-2 border-b border-line/70 pb-2">
+        <button
+          onClick={() => setActiveTab("overview")}
+          className={`rounded-xl px-4 py-2 text-xs font-medium transition-colors ${
+            activeTab === "overview"
+              ? "bg-accent/15 text-accent font-semibold border border-accent/25"
+              : "text-muted hover:text-ink"
+          }`}
+        >
+          Executive Actions & Risks
+        </button>
         <button
           onClick={() => setActiveTab("patterns")}
           className={`rounded-xl px-4 py-2 text-xs font-medium transition-colors ${
@@ -123,54 +173,142 @@ export default function IntelligencePage() {
           Coding Patterns
         </button>
         <button
-          onClick={() => setActiveTab("mistakes")}
+          onClick={() => setActiveTab("risks")}
           className={`rounded-xl px-4 py-2 text-xs font-medium transition-colors ${
-            activeTab === "mistakes"
+            activeTab === "risks"
               ? "bg-accent/15 text-accent font-semibold border border-accent/25"
               : "text-muted hover:text-ink"
           }`}
         >
-          Repeated Mistakes
+          Critical Risks ({data?.critical_risks?.length || 0})
         </button>
       </div>
 
       {/* Tab Panels */}
-      {activeTab === "patterns" ? (
-        <div className="grid gap-4 md:grid-cols-3">
-          {patterns.map((pat, idx) => (
-            <Card key={idx} variant="glass">
-              <CardContent className="p-5 space-y-3">
-                <div className="flex items-center justify-between">
-                  <Badge variant="blue">{pat.impact}</Badge>
-                  <span className="font-mono text-xs text-accent font-semibold">{pat.freq}</span>
-                </div>
-                <h3 className="text-sm font-semibold text-ink">{pat.title}</h3>
-                <p className="text-xs leading-relaxed text-muted">{pat.desc}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {repeatedMistakes.map((mis, idx) => (
-            <Card key={idx}>
-              <CardContent className="p-5 space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <AlertTriangle size={15} className="text-amber-400" />
-                    <h3 className="text-sm font-semibold text-ink">{mis.issue}</h3>
+      {activeTab === "overview" && (
+        <div className="grid gap-4 md:grid-cols-2">
+          {/* Recommended Next Actions */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <Lightbulb size={16} className="text-accent" />
+                <span>Recommended Engineering Fixes</span>
+              </CardTitle>
+              <CardDescription>
+                High-priority remediations compiled across all specialized agents
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {data?.recommended_fixes && data.recommended_fixes.length > 0 ? (
+                data.recommended_fixes.map((fix, idx) => (
+                  <div key={idx} className="p-3.5 rounded-xl border border-line bg-panel-raised space-y-1">
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono text-xs font-semibold text-ink">{fix.file}</span>
+                      <Badge variant="blue">{fix.priority}</Badge>
+                    </div>
+                    <p className="text-xs text-muted">{fix.action}</p>
                   </div>
-                  <Badge variant="amber">{mis.count}</Badge>
+                ))
+              ) : (
+                <div className="p-6 text-center text-xs text-muted border border-dashed border-line rounded-xl">
+                  No pending engineering fixes recorded. Run a code review to generate action items.
                 </div>
-                <p className="text-xs font-mono text-muted">Affected: {mis.files}</p>
-                <div className="mt-2 rounded-lg bg-panel-raised p-3 text-xs text-ink/90 border border-line-subtle flex items-start gap-2">
-                  <Lightbulb size={14} className="text-accent shrink-0 mt-0.5" />
-                  <span>{mis.mitigation}</span>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Trade-offs & Decision Summary */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <CheckCircle size={16} className="text-emerald-400" />
+                <span>Architectural Trade-offs</span>
+              </CardTitle>
+              <CardDescription>
+                System trade-offs identified and stored in Hindsight memory
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {data?.trade_offs && data.trade_offs.length > 0 ? (
+                data.trade_offs.map((to, idx) => (
+                  <div key={idx} className="p-3.5 rounded-xl border border-line bg-panel-raised space-y-1">
+                    <h4 className="text-xs font-semibold text-ink">{to.decision}</h4>
+                    <p className="text-[11px] text-emerald-400 font-mono">+ {to.benefit}</p>
+                    <p className="text-[11px] text-amber-400 font-mono">- {to.drawback}</p>
+                  </div>
+                ))
+              ) : (
+                <div className="p-6 text-center text-xs text-muted border border-dashed border-line rounded-xl">
+                  No architectural trade-offs recorded yet.
                 </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {activeTab === "patterns" && (
+        <div className="space-y-4">
+          {data?.patterns_detected && data.patterns_detected.length > 0 ? (
+            <div className="grid gap-4 md:grid-cols-2">
+              {data.patterns_detected.map((pattern, idx) => (
+                <Card key={idx} variant="glass">
+                  <CardContent className="p-5 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Badge variant="blue">Detected Pattern</Badge>
+                      <span className="font-mono text-xs text-accent">Active Signal</span>
+                    </div>
+                    <h3 className="text-sm font-semibold text-ink">{pattern}</h3>
+                    <p className="text-xs leading-relaxed text-muted">
+                      Synthesized from repository code structure and multi-agent AST evaluation.
+                    </p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <Card>
+              <CardContent className="p-8 text-center space-y-3 border border-dashed border-line rounded-xl">
+                <p className="text-xs text-muted">
+                  No recurring code patterns or architectural hotspots detected yet in repository history.
+                </p>
+                <Link
+                  href="/reviews"
+                  className="inline-flex items-center gap-1.5 text-xs text-accent font-semibold hover:underline"
+                >
+                  Run analysis scan <ArrowRight size={12} />
+                </Link>
               </CardContent>
             </Card>
-          ))}
+          )}
         </div>
+      )}
+
+      {activeTab === "risks" && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <AlertTriangle size={16} className="text-rose-400" />
+              <span>Critical Engineering Risks</span>
+            </CardTitle>
+            <CardDescription>
+              Aggregated critical boundary violations and P0 security vulnerabilities
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {data?.critical_risks && data.critical_risks.length > 0 ? (
+              data.critical_risks.map((risk, idx) => (
+                <div key={idx} className="p-3.5 rounded-xl border border-rose-500/20 bg-rose-500/[0.04] text-xs font-mono text-rose-300">
+                  {risk}
+                </div>
+              ))
+            ) : (
+              <div className="p-6 text-center text-xs text-muted border border-dashed border-line rounded-xl">
+                Zero critical engineering risks detected across active modules.
+              </div>
+            )}
+          </CardContent>
+        </Card>
       )}
     </div>
   );

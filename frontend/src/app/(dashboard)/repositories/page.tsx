@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   GitBranch,
@@ -14,56 +14,34 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge, Card, CardContent } from "@/components/ui/surfaces";
 import { EmptyState } from "@/components/common/EmptyState";
-
-interface RepoItem {
-  id: string;
-  name: string;
-  githubUrl: string;
-  defaultBranch: string;
-  status: "connected" | "syncing" | "pending";
-  lastAnalysis: string;
-  filesCount: number;
-  openIssues: number;
-}
-
-const mockRepos: RepoItem[] = [
-  {
-    id: "repo-1",
-    name: "codemind/ai-core",
-    githubUrl: "https://github.com/codemind/ai-core",
-    defaultBranch: "main",
-    status: "connected",
-    lastAnalysis: "15 minutes ago",
-    filesCount: 142,
-    openIssues: 4,
-  },
-  {
-    id: "repo-2",
-    name: "org/web-service-v2",
-    githubUrl: "https://github.com/org/web-service-v2",
-    defaultBranch: "develop",
-    status: "connected",
-    lastAnalysis: "3 hours ago",
-    filesCount: 388,
-    openIssues: 1,
-  },
-  {
-    id: "repo-3",
-    name: "payments/checkout-worker",
-    githubUrl: "https://github.com/payments/checkout-worker",
-    defaultBranch: "main",
-    status: "connected",
-    lastAnalysis: "1 day ago",
-    filesCount: 64,
-    openIssues: 0,
-  },
-];
+import { fetchRepositories, registerRepository, type RepoItem } from "@/lib/api";
 
 export default function RepositoriesPage() {
-  const [repos, setRepos] = useState<RepoItem[]>(mockRepos);
+  const [repos, setRepos] = useState<RepoItem[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [isConnecting, setIsConnecting] = useState(false);
+  const [repoInput, setRepoInput] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchRepositories()
+      .then((data) => setRepos(data))
+      .catch(() => undefined)
+      .finally(() => setLoading(false));
+  }, []);
+
+  const handleConnect = async () => {
+    if (!repoInput.trim()) return;
+    try {
+      const created = await registerRepository(repoInput.trim());
+      setRepos((prev) => [...prev.filter((r) => r.id !== created.id), created]);
+      setRepoInput("");
+      setIsConnecting(false);
+    } catch {
+      // Handled silently
+    }
+  };
 
   const filtered = repos.filter((r) => {
     const matchesSearch = r.name.toLowerCase().includes(searchTerm.toLowerCase());
@@ -106,7 +84,7 @@ export default function RepositoriesPage() {
               <div>
                 <h3 className="text-base font-semibold text-ink">Connect GitHub Repository</h3>
                 <p className="mt-1 text-xs text-muted">
-                  Select a repository from your GitHub App installation or configure permissions.
+                  Specify a repository (e.g. org/repo or full GitHub URL) to register for analysis.
                 </p>
               </div>
               <button
@@ -119,27 +97,12 @@ export default function RepositoriesPage() {
             <div className="mt-4 flex flex-col sm:flex-row gap-3">
               <input
                 type="text"
+                value={repoInput}
+                onChange={(e) => setRepoInput(e.target.value)}
                 placeholder="github.com/organization/repository-name"
                 className="flex-1 rounded-xl border border-line bg-panel px-4 py-2 text-xs text-ink focus:border-accent focus:outline-none"
               />
-              <Button
-                onClick={() => {
-                  setRepos([
-                    ...repos,
-                    {
-                      id: `repo-${Date.now()}`,
-                      name: "new-org/microservice",
-                      githubUrl: "https://github.com/new-org/microservice",
-                      defaultBranch: "main",
-                      status: "connected",
-                      lastAnalysis: "Just now",
-                      filesCount: 78,
-                      openIssues: 0,
-                    },
-                  ]);
-                  setIsConnecting(false);
-                }}
-              >
+              <Button onClick={handleConnect}>
                 Authorize & Ingest
               </Button>
             </div>
@@ -175,10 +138,19 @@ export default function RepositoriesPage() {
       </div>
 
       {/* Repositories Cards Grid */}
-      {filtered.length === 0 ? (
+      {loading ? (
+        <div className="p-8 text-center text-xs text-muted">Loading connected repositories...</div>
+      ) : repos.length === 0 ? (
         <EmptyState
-          title="No repositories found"
-          description="Try modifying your search term or connect a new GitHub repository."
+          title="No repositories connected"
+          description="Connect a GitHub repository or trigger a code review in the workspace to register a source."
+          actionLabel="Connect Repository"
+          onAction={() => setIsConnecting(true)}
+        />
+      ) : filtered.length === 0 ? (
+        <EmptyState
+          title="No repositories match filter"
+          description="Try modifying your search term or filter selection."
           actionLabel="Clear Search"
           onAction={() => {
             setSearchTerm("");
@@ -203,7 +175,7 @@ export default function RepositoriesPage() {
                     </div>
 
                     <a
-                      href={repo.githubUrl}
+                      href={repo.github_url}
                       target="_blank"
                       rel="noreferrer"
                       className="text-muted hover:text-ink transition-colors p-1"
@@ -217,30 +189,30 @@ export default function RepositoriesPage() {
                     {repo.name}
                   </h3>
                   <p className="mt-1 font-mono text-[11px] text-muted">
-                    branch: <span className="text-ink">{repo.defaultBranch}</span>
+                    branch: <span className="text-ink">{repo.default_branch}</span>
                   </p>
                 </div>
 
                 <div className="border-t border-line pt-3 space-y-2">
                   <div className="flex items-center justify-between text-xs text-muted">
                     <span className="flex items-center gap-1.5">
-                      <FileCode2 size={13} /> Ingested files
+                      <FileCode2 size={13} /> Ingested findings
                     </span>
-                    <span className="font-mono text-ink">{repo.filesCount}</span>
+                    <span className="font-mono text-ink">{repo.files_count}</span>
                   </div>
 
                   <div className="flex items-center justify-between text-xs text-muted">
                     <span className="flex items-center gap-1.5">
-                      <AlertCircle size={13} className="text-amber-400" /> Open Findings
+                      <AlertCircle size={13} className="text-amber-400" /> Open Issues
                     </span>
-                    <span className="font-mono font-medium text-ink">{repo.openIssues}</span>
+                    <span className="font-mono font-medium text-ink">{repo.open_issues}</span>
                   </div>
 
                   <div className="flex items-center justify-between text-xs text-muted pt-1">
                     <span className="flex items-center gap-1.5 text-[11px]">
                       <Clock size={12} /> Last Analysis
                     </span>
-                    <span className="text-[11px] font-mono text-muted">{repo.lastAnalysis}</span>
+                    <span className="text-[11px] font-mono text-muted">{repo.last_analysis}</span>
                   </div>
                 </div>
 

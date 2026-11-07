@@ -4,9 +4,9 @@
   "version": "0.1.0",
   "packageManager": "pnpm@11.25.0",
   "scripts": {
-    "dev:frontend": "pnpm --filter @codemind/frontend dev",
-    "build": "pnpm --filter @codemind/frontend build",
-    "typecheck": "pnpm --filter @codemind/frontend typecheck",
-    "lint": "pnpm --filter @codemind/frontend lint"
+    "dev:frontend": "corepack pnpm --filter @codemind/frontend dev",
+    "build": "corepack pnpm --filter @codemind/frontend build",
+    "typecheck": "corepack pnpm --filter @codemind/frontend typecheck",
+    "lint": "corepack pnpm --filter @codemind/frontend lint"
   }
 }
